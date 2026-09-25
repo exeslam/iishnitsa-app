@@ -257,3 +257,4 @@ body.white{--bg:#FFFFFF;--card:#F5F5F7}
 .empty-card p{margin-top:6px;color:var(--label2);font-size:15px}
 .legal p,.legal li{font-size:15px}
 .art-term .ok .ti svg{stroke:none}
+.p-video{margin:14px 0 0}

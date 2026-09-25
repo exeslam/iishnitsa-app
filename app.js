@@ -297,6 +297,8 @@
         return `<h2 class="p-h">${esc(b.title)}</h2><div class="p-mods">${b.items.map((m, i) => `<div class="mod"><span class="n">${i + 1}</span><div><b>${esc(m.title)}</b><p>${inline(m.text)}</p></div></div>`).join("")}</div>`;
       case "faq":
         return `<h2 class="p-h">${esc(b.title || "Вопросы")}</h2><div class="group">${b.items.map((q) => `<details class="term"><summary><span class="t">${esc(q.q)}</span><span class="en"></span>${icon("chevron-down").replace('class="ti"', 'class="ti chev"')}</summary><div class="body"><p>${inline(q.a)}</p></div></details>`).join("")}</div>`;
+      case "video":
+        return `<div class="promo p-video"><video src="${esc(b.src)}" ${b.poster ? `poster="${esc(b.poster)}"` : ""} autoplay muted loop playsinline preload="metadata"></video></div>`;
       case "text":
         return `${b.title ? `<h2 class="p-h">${esc(b.title)}</h2>` : ""}<p class="p-sub">${inline(b.text)}</p>`;
       default:

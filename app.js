@@ -84,10 +84,10 @@
   }
 
   // ---------- theme: follow Telegram, fall back to the OS ----------
+  // Always light (Umar 26.09): the app ignores Telegram's and the OS dark mode.
   function applyTheme() {
-    const dark = tg?.colorScheme ? tg.colorScheme === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
-    document.documentElement.dataset.theme = dark ? "dark" : "light";
-    const bg = dark ? "#000000" : document.body.classList.contains("white") ? "#FFFFFF" : "#F2F2F7";
+    document.documentElement.dataset.theme = "light";
+    const bg = document.body.classList.contains("white") ? "#FFFFFF" : "#F2F2F7";
     try {
       tg?.setHeaderColor?.(bg);
       tg?.setBackgroundColor?.(bg);
@@ -232,7 +232,12 @@
       .join("");
   }
 
+  // Slides are video banners (motion, no sound); the text lives in the video, the pill leads to the product page.
   function slideHtml(s) {
+    if (s.video)
+      return `<button class="slide vid" data-go="#/p/${esc(s.slug)}" aria-label="${esc(s.title)}">
+        <video src="${esc(s.video)}" ${s.poster ? `poster="${esc(s.poster)}"` : ""} autoplay muted loop playsinline preload="auto"></video>
+        <span class="slide-cta glass-pill">${esc(s.cta)}${icon("chevron-right")}</span></button>`;
     return `<button class="slide" data-go="#/p/${esc(s.slug)}" style="--a:${s.c1};--b:${s.c2}">
       <div class="slide-art">${ART[s.art]?.() || ""}</div>
       <div class="slide-txt">
@@ -513,8 +518,6 @@
   });
 
   tg?.BackButton.onClick(() => (history.length > 1 ? history.back() : go("#/home")));
-  tg?.onEvent?.("themeChanged", applyTheme);
-  matchMedia("(prefers-color-scheme: dark)").addEventListener("change", applyTheme);
   window.addEventListener("hashchange", route);
 
   applyTheme();

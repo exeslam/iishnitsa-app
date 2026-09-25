@@ -12,6 +12,11 @@
       "c2": "#0A4FD6"
     },
     {
+      "type": "video",
+      "src": "media/claude.mp4",
+      "poster": "media/claude.jpg"
+    },
+    {
       "type": "facts",
       "items": [
         {

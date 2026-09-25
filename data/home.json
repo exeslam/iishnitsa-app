@@ -8,7 +8,9 @@
       "subtitle": "Какую подписку взять, что скачать, как настроить. И короткое обучение, чтобы через вечер уже делать свои штуки",
       "cta": "Подробнее",
       "c1": "#2E8BFF",
-      "c2": "#0A4FD6"
+      "c2": "#0A4FD6",
+      "video": "media/claude.mp4",
+      "poster": "media/claude.jpg"
     },
     {
       "slug": "club",
@@ -18,11 +20,10 @@
       "subtitle": "Закрытый чат, разборы твоих проектов и новые скиллы каждую неделю",
       "cta": "Встать в очередь",
       "c1": "#FF9F0A",
-      "c2": "#E0561B"
+      "c2": "#E0561B",
+      "video": "media/club.mp4",
+      "poster": "media/club.jpg"
     }
   ],
-  "video": {
-    "src": "media/home.mp4",
-    "poster": "media/home.jpg"
-  }
+  "video": null
 }

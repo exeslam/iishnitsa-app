@@ -203,9 +203,9 @@
   const prompts = () => load("data/prompts.json");
   let homeCat = "all";
 
-  const card = (go, look, t, sub, extra = "") => `<button class="fcard" ${go.startsWith("http") ? `data-link="${esc(go)}"` : `data-go="${esc(go)}"`}>
+  const card = (go, look, t, sub, extra = "", fresh = false) => `<button class="fcard" ${go.startsWith("http") ? `data-link="${esc(go)}"` : `data-go="${esc(go)}"`}>
       <span class="sym" style="--c1:${look.c[0]};--c2:${look.c[1]}">${icon(look.icon)}</span>
-      <span class="txt"><span class="t">${esc(t)}</span><span class="s">${esc(sub)}</span></span>${extra || chev()}</button>`;
+      <span class="txt"><span class="t">${fresh ? NEW : ""}${esc(t)}</span><span class="s">${esc(sub)}</span></span>${extra || chev()}</button>`;
   const PROMPT_LOOK = { icon: "writing", c: ["#5E5CE6", "#4B48D6"] };
 
   async function feed(cat) {
@@ -213,8 +213,8 @@
     const libSec = (id) => lib.sections.find((s) => s.id === id);
     const secRow = (key, s) => s && card(`${COLLECTIONS[key].base}/${s.id}`, SECTION_LOOK[s.id] || { icon: "star", c: ["#8E8E93", "#6D6D72"] }, s.title, `${s.items.length} проверенных ссылок`);
     const blocks = {
-      guides: () => g.map((x) => card(`#/guide/${x.slug}`, { icon: x.icon, c: [x.c1, x.c2] }, x.title, x.subtitle)),
-      prompts: (n) => p.prompts.slice(0, n).map((x) => card(`#/prompt/${x.id}`, PROMPT_LOOK, x.title, x.text.split("\n")[0])),
+      guides: () => g.map((x) => card(`#/guide/${x.slug}`, { icon: x.icon, c: [x.c1, x.c2] }, x.title, x.subtitle, "", isNew(x.date))),
+      prompts: (n) => p.prompts.slice(0, n).map((x) => card(`#/prompt/${x.id}`, PROMPT_LOOK, x.title, x.text.split("\n")[0], "", isNew(x.added))),
       interesting: () => [
         card("#/glossary", { icon: "writing", c: ["#5E5CE6", "#4B48D6"] }, "Словарь вайбкодера", "Агент, скилл, MCP и токен простыми словами"),
         card("#/c/repos", { icon: "git-branch", c: ["#3A3A3C", "#1C1C1E"] }, "Репозитории", "Самые нужные проекты на GitHub"),
@@ -228,11 +228,21 @@
       const order = ["работа", "деньги", "контент", "рилсы", "учёба", "быт", "Claude Code"];
       const topic = (x) => order.find((t) => (x.tags || []).includes(t)) || "другое";
       const groups = [...order, "другое"].map((t) => [t, p.prompts.filter((x) => topic(x) === t)]).filter(([, xs]) => xs.length);
-      return groups.map(([t, xs]) => `<div class="fhead"><h2>${esc(t[0].toUpperCase() + t.slice(1))}</h2><span class="count">${xs.length}</span></div><div class="flist">${xs.map((x) => card(`#/prompt/${x.id}`, PROMPT_LOOK, x.title, x.text.split("\n")[0])).join("")}</div>`).join("");
+      return groups.map(([t, xs]) => `<div class="fhead"><h2>${esc(t[0].toUpperCase() + t.slice(1))}</h2><span class="count">${xs.length}</span></div><div class="flist">${xs.map((x) => card(`#/prompt/${x.id}`, PROMPT_LOOK, x.title, x.text.split("\n")[0], "", isNew(x.added))).join("")}</div>`).join("");
     }
     if (cat !== "all") return `<div class="flist">${blocks[cat](99).join("")}</div>`;
+    const gCard = (x) => card(`#/guide/${x.slug}`, { icon: x.icon, c: [x.c1, x.c2] }, x.title, x.subtitle, "", isNew(x.date));
+    const pCard = (x) => card(`#/prompt/${x.id}`, PROMPT_LOOK, x.title, x.text.split("\n")[0], "", isNew(x.added));
+    const tags = interestTags();
+    const mine = [...g.filter((x) => (x.topics || []).some((t) => state.interests.includes(t))).map(gCard), ...p.prompts.filter((x) => (x.tags || []).some((t) => tags.includes(t))).map(pCard)].slice(0, 4);
+    const fresh = [...g.filter((x) => isNew(x.date)).map((x) => [x.date, gCard(x)]), ...p.prompts.filter((x) => isNew(x.added)).map((x) => [x.added, pCard(x)])]
+      .sort((a, b) => (a[0] < b[0] ? 1 : -1)).slice(0, 3).map(([, h]) => h);
+    const head = (t, extra = "") => `<div class="fhead"><h2>${t}</h2>${extra}</div>`;
+    const top = (mine.length ? head("Для тебя", `<button class="more" data-onb="3">Интересы</button>`) + `<div class="flist">${mine.join("")}</div>` : "") + (fresh.length ? head("Новое") + `<div class="flist">${fresh.join("")}</div>` : "");
     const ORDER = ["guides", "prompts", "interesting", "design", "video", "ai"];
-    return ORDER.map((id) => CATS.find((c) => c.id === id))
+    if (state.interests.includes("design")) ORDER.splice(ORDER.indexOf("design"), 1), ORDER.splice(1, 0, "design");
+    if (state.interests.includes("claude")) ORDER.splice(ORDER.indexOf("interesting"), 1), ORDER.splice(1, 0, "interesting");
+    return top + ORDER.map((id) => CATS.find((c) => c.id === id))
       .map((c) => {
         const rows = blocks[c.id](3);
         return rows.length ? `<div class="fhead"><h2>${c.title}</h2><button class="more" data-cat="${c.id}">Все</button></div><div class="flist">${rows.join("")}</div>` : "";
@@ -258,7 +268,9 @@
   async function screenHome() {
     const h = await home();
     view.innerHTML = `<section class="screen home">
-      <header class="topbar"><img src="avatar.jpg" alt=""><div><b>ИИшница</b><span>нейронки на завтрак</span></div></header>
+      <header class="topbar"><img src="avatar.jpg" alt=""><div><b>ИИшница</b><span>нейронки на завтрак</span></div>
+        <button class="round" data-go="#/saved" aria-label="Сохранённое">${icon("heart")}</button></header>
+      <button class="search fake" data-go="#/search">${icon("search")}<span>Поиск по гайдам и промптам</span></button>
       <div class="slider" id="slider">${h.slides.map(slideHtml).join("")}</div>
       <div class="dots">${h.slides.map((_, i) => `<i class="${i ? "" : "on"}"></i>`).join("")}</div>
       ${h.video ? `<div class="promo"><video src="${esc(h.video.src)}" ${h.video.poster ? `poster="${esc(h.video.poster)}"` : ""} autoplay muted loop playsinline preload="metadata"></video></div>` : ""}
@@ -350,13 +362,17 @@
       </div>
       <div class="pcard big"><pre>${hlVars(p.text)}</pre><button class="copy wide primary" id="cp">${icon("copy")}Скопировать промпт</button></div>
       ${vars.length ? `<div class="vars"><div class="toc-h">Что подставить</div>${vars.map((v) => `<span class="var">${esc(v)}</span>`).join("")}</div>` : ""}
+      <div class="open2 act">
+        ${favBtn(`p:${p.id}`, "Сохранить").replace('class="fav', 'class="obtn fav')}
+        <button class="obtn" data-share="p|${esc(p.id)}|${esc(p.title)}">${icon("send")}Поделиться</button>
+      </div>
       <div class="open2">
         <button class="obtn" data-link="https://claude.ai/new">${icon("sparkles")}Открыть Claude</button>
         <button class="obtn" data-link="https://chatgpt.com/">${icon("message-circle")}Открыть ChatGPT</button>
       </div>
       ${src ? `<button class="toc-row solo" data-go="#/guide/${esc(src.slug)}"><span class="gemoji sm">📖</span><span>Из гайда "${esc(src.title)}"</span>${chev()}</button>` : ""}
       <div class="fhead"><h2>Ещё промпты</h2></div>
-      <div class="flist">${more.map((x) => card(`#/prompt/${x.id}`, PROMPT_LOOK, x.title, x.text.split("\n")[0])).join("")}</div>
+      <div class="flist">${more.map((x) => card(`#/prompt/${x.id}`, PROMPT_LOOK, x.title, x.text.split("\n")[0], "", isNew(x.added))).join("")}</div>
     </section>`;
     view.querySelector("#cp").addEventListener("click", (e) => copy(p.text, e.currentTarget));
   }
@@ -370,6 +386,9 @@
     view.innerHTML = `<section class="screen">
       <header class="hero"><h1>Аккаунт</h1></header>
       <div class="profile">${ava}<div><b>${esc(name)}</b><span>${u?.username ? "@" + esc(u.username) : "Открой приложение из Telegram"}</span></div></div>
+      <div class="caption">Моё</div>
+      <div class="group">${row("#/saved", { icon: "heart", c: ["#FF2D55", "#D91C43"], }, "Сохранённое", `${state.favs.size ? state.favs.size + " в избранном" : "Гайды и промпты с сердечком"}`)}
+        <button class="row" data-onb="3">${symFor({ icon: "adjustments", c: ["#5E5CE6", "#4B48D6"] })}<span class="txt"><div class="t">Мои интересы</div><div class="s">${state.interests.length ? INTERESTS.filter((i) => state.interests.includes(i.id)).map((i) => i.title).join(", ") : "Настроить ленту под себя"}</div></span>${chev()}</button></div>
       <div class="caption">Покупки</div>
       <div class="group">${row("#/purchases", { icon: "wallet", c: ["#34C759", "#22A447"] }, "Мои покупки", "Курсы, паки и подписка на клуб")}</div>
       <div class="caption">Документы</div>
@@ -499,6 +518,7 @@
       <div class="progress"><i></i></div>
       ${back("#/home", "Главная")}
       <header class="gcover" style="--a:${g.c1};--b:${g.c2}">
+        <div class="gact">${favBtn(`g:${g.slug}`)}<button class="fav" data-share="g|${esc(g.slug)}|${esc(g.title)}" aria-label="Поделиться">${icon("send")}</button></div>
         <span class="sym big">${icon(g.icon)}</span>
         <h1>${esc(intro.title || g.title)}</h1>
         <p>${esc(g.subtitle)}</p>
@@ -602,6 +622,152 @@
     bindSearch(screenGlossary);
   }
 
+  // ---------- per-user state: Telegram CloudStorage (follows the user across devices), localStorage outside Telegram ----------
+  const cloud = tg?.CloudStorage && tg.isVersionAtLeast?.("6.9") ? tg.CloudStorage : null;
+  const local = {
+    get: (k) => { try { return localStorage.getItem(k); } catch { return null; } },
+    set: (k, v) => { try { localStorage.setItem(k, v); } catch {} },
+  };
+  const store = {
+    get: (k) => (cloud ? new Promise((r) => cloud.getItem(k, (e, v) => r(e ? null : v || null))) : Promise.resolve(local.get(k))),
+    set: (k, v) => (cloud ? new Promise((r) => cloud.setItem(k, v, () => r())) : Promise.resolve(local.set(k, v))),
+  };
+  const state = { favs: new Set(), interests: [], onboarded: false };
+  async function loadState() {
+    const [f, i, o] = await Promise.all([store.get("favs"), store.get("interests"), store.get("onboarded")]);
+    try { state.favs = new Set(JSON.parse(f || "[]")); } catch {}
+    try { state.interests = JSON.parse(i || "[]"); } catch {}
+    state.onboarded = o === "1";
+  }
+  const favBtn = (key, label = "") => `<button class="fav${state.favs.has(key) ? " on" : ""}" data-fav="${esc(key)}" aria-label="Сохранить">${icon("heart")}${label ? `<span>${label}</span>` : ""}</button>`;
+  async function toggleFav(key) {
+    const on = !state.favs.has(key);
+    on ? state.favs.add(key) : state.favs.delete(key);
+    haptic("ok");
+    document.querySelectorAll(`[data-fav="${CSS.escape(key)}"]`).forEach((b) => b.classList.toggle("on", on));
+    toast(on ? "Сохранено ❤️" : "Убрано из сохранённого");
+    await store.set("favs", JSON.stringify([...state.favs]));
+  }
+
+  // ---------- share: via the bot, so a friend lands on the subscription gate and then right on this item ----------
+  const BOT = "iishnitsa1_bot";
+  function share(kind, id, title) {
+    const url = `https://t.me/${BOT}?start=${kind}_${id}`;
+    const text = `${title}. Бесплатно в приложении ИИшница`;
+    const link = `https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`;
+    haptic();
+    if (tg) tg.openTelegramLink(link);
+    else window.open(link, "_blank", "noopener");
+  }
+
+  // ---------- "new" marks: anything added within the last 7 days ----------
+  // Launch content (25.09) is never "new"; anything added later is, for 7 days.
+  const LAUNCH = "2026-09-25";
+  const isNew = (date) => !!date && date > LAUNCH && Date.now() - new Date(date).getTime() < 7 * 86_400_000;
+  const NEW = `<span class="new">Новое</span>`;
+
+  // ---------- interests (onboarding) ----------
+  const INTERESTS = [
+    { id: "work", title: "Работа и деньги", icon: "briefcase", c: ["#FF9F0A", "#F08300"], tags: ["работа", "деньги"] },
+    { id: "content", title: "Контент и рилсы", icon: "movie", c: ["#FF375F", "#E5214A"], tags: ["контент", "рилсы"] },
+    { id: "claude", title: "Claude Code и вайбкодинг", icon: "terminal-2", c: ["#2E8BFF", "#0A6CFF"], tags: ["Claude Code"] },
+    { id: "design", title: "Дизайн и бесплатные ресурсы", icon: "palette", c: ["#34C759", "#22A447"], tags: [] },
+    { id: "life", title: "Учёба и быт", icon: "school", c: ["#AF52DE", "#9538C6"], tags: ["учёба", "быт"] },
+  ];
+  const interestTags = () => INTERESTS.filter((i) => state.interests.includes(i.id)).flatMap((i) => i.tags);
+
+  function showOnboarding(startAt = 0) {
+    const picked = new Set(state.interests);
+    const slides = [
+      { icon: "school", c: ["#FF375F", "#E5214A"], t: "Гайды пошагово", s: "Claude Code за вечер, монтаж рилса за 20 минут, скиллы. Всё проверено на себе" },
+      { icon: "writing", c: ["#5E5CE6", "#4B48D6"], t: "Промпты в один тап", s: "Больше 30 готовых промптов. Копируешь, подставляешь своё в скобки, готово" },
+      { icon: "layout-grid", c: ["#34C759", "#22A447"], t: "Бесплатная библиотека", s: "Шрифты, музыка, стоки, нейронки и словарь вайбкодера. С лицензиями и подвохами" },
+    ];
+    const el = document.createElement("div");
+    el.className = "onb";
+    el.innerHTML = `<div class="onb-track">${slides.map((x) => `<section class="onb-page">
+        <div class="onb-art"><span class="sym" style="--c1:${x.c[0]};--c2:${x.c[1]}">${icon(x.icon)}</span></div>
+        <h1>${x.t}</h1><p>${x.s}</p></section>`).join("")}
+      <section class="onb-page pick"><h1>Что тебе интересно?</h1><p>Подберу ленту под тебя. Можно выбрать несколько</p>
+        <div class="picks">${INTERESTS.map((i) => `<button class="pick-btn${picked.has(i.id) ? " on" : ""}" data-pick="${i.id}"><span class="sym" style="--c1:${i.c[0]};--c2:${i.c[1]}">${icon(i.icon)}</span><span>${i.title}</span>${icon("check")}</button>`).join("")}</div></section></div>
+      <div class="onb-foot"><div class="dots">${[0, 1, 2, 3].map((k) => `<i class="${k === startAt ? "on" : ""}"></i>`).join("")}</div><button class="cta onb-next">Дальше</button><button class="onb-skip">Пропустить</button></div>`;
+    document.body.appendChild(el);
+    const track = el.querySelector(".onb-track");
+    const next = el.querySelector(".onb-next");
+    let page = startAt;
+    const show = (k) => {
+      page = k;
+      track.style.transform = `translateX(${-100 * k}%)`;
+      el.querySelectorAll(".dots i").forEach((d, j) => d.classList.toggle("on", j === k));
+      next.textContent = k === 3 ? "Готово" : "Дальше";
+    };
+    const finish = async () => {
+      state.interests = [...picked];
+      state.onboarded = true;
+      el.classList.add("out");
+      setTimeout(() => el.remove(), 350);
+      await Promise.all([store.set("interests", JSON.stringify(state.interests)), store.set("onboarded", "1")]);
+      if (!location.hash || location.hash === "#/home") route();
+    };
+    show(startAt);
+    next.addEventListener("click", () => (haptic(), page < 3 ? show(page + 1) : finish()));
+    el.querySelector(".onb-skip").addEventListener("click", finish);
+    el.querySelectorAll("[data-pick]").forEach((b) => b.addEventListener("click", () => {
+      haptic();
+      picked.has(b.dataset.pick) ? picked.delete(b.dataset.pick) : picked.add(b.dataset.pick);
+      b.classList.toggle("on", picked.has(b.dataset.pick));
+    }));
+    let x0 = null;
+    track.addEventListener("touchstart", (e) => (x0 = e.touches[0].clientX), { passive: true });
+    track.addEventListener("touchend", (e) => {
+      if (x0 === null) return;
+      const dx = e.changedTouches[0].clientX - x0;
+      if (dx < -50 && page < 3) show(page + 1);
+      if (dx > 50 && page > 0) show(page - 1);
+      x0 = null;
+    });
+  }
+
+  // ---------- search across the whole app ----------
+  async function screenSearch(query = "") {
+    const q = query.trim().toLowerCase();
+    const [g, p, gl, lib, rep, sk] = await Promise.all([guides(), prompts(), glossary(), load(COLLECTIONS.library.file), load(COLLECTIONS.repos.file), load(COLLECTIONS.skills.file)]);
+    const links = [lib, rep, sk].flatMap((c) => c.sections.flatMap((s) => s.items));
+    const res = q
+      ? [
+          ["Гайды", g.filter((x) => matches(q, x.title, x.subtitle, x.tags)).map((x) => card(`#/guide/${x.slug}`, { icon: x.icon, c: [x.c1, x.c2] }, x.title, x.subtitle, "", isNew(x.date)))],
+          ["Промпты", p.prompts.filter((x) => matches(q, x.title, x.text, x.tags)).map((x) => card(`#/prompt/${x.id}`, PROMPT_LOOK, x.title, x.text.split("\n")[0], "", isNew(x.added)))],
+          ["Словарь", gl.terms.filter((t) => matches(q, t.term, t.en, t.what)).map((t) => card("#/glossary", { icon: "bulb", c: ["#FFCC00", "#F2B600"] }, t.term, t.what))],
+          ["Библиотека", links.filter((it) => matches(q, it.name, it.what, it.tags || [])).slice(0, 20).map((it) => card(it.url, { icon: "link", c: ["#8E8E93", "#6D6D72"] }, it.name, it.what, icon("link").replace('class="ti"', 'class="ti chev"')))],
+        ].filter(([, rows]) => rows.length)
+      : [];
+    view.innerHTML = `<section class="screen">
+      ${back("#/home", "Главная")}
+      <header class="hero"><h1>Поиск</h1><p>Гайды, промпты, словарь и библиотека</p></header>
+      ${searchBox("Например, рилс, скилл или шрифт", query)}
+      ${q ? (res.length ? res.map(([t, rows]) => `<div class="fhead"><h2>${t}</h2><span class="count">${rows.length}</span></div><div class="flist">${rows.join("")}</div>`).join("") : `<div class="empty">Ничего не нашлось. Попробуй другое слово</div>`)
+        : `<div class="hints">${["промпт", "рилс", "Claude", "шрифт", "музыка", "скилл", "деньги"].map((h) => `<button class="chip-btn" data-q="${h}">${h}</button>`).join("")}</div>`}
+    </section>`;
+    bindSearch(screenSearch);
+    const input = view.querySelector(".search input");
+    if (!q) setTimeout(() => input.focus(), 50);
+    view.querySelectorAll("[data-q]").forEach((b) => b.addEventListener("click", () => screenSearch(b.dataset.q).then(() => view.querySelector(".search input").focus())));
+  }
+
+  // ---------- saved ----------
+  async function screenSaved() {
+    const [g, p] = await Promise.all([guides(), prompts()]);
+    const sg = g.filter((x) => state.favs.has(`g:${x.slug}`));
+    const sp = p.prompts.filter((x) => state.favs.has(`p:${x.id}`));
+    view.innerHTML = `<section class="screen">
+      ${back("#/account", "Аккаунт")}
+      <header class="hero"><h1>Сохранённое</h1><p>Сохраняется в Telegram и видно на всех твоих устройствах</p></header>
+      ${sg.length ? `<div class="fhead"><h2>Гайды</h2></div><div class="flist">${sg.map((x) => card(`#/guide/${x.slug}`, { icon: x.icon, c: [x.c1, x.c2] }, x.title, x.subtitle, "", isNew(x.date))).join("")}</div>` : ""}
+      ${sp.length ? `<div class="fhead"><h2>Промпты</h2></div><div class="flist">${sp.map((x) => card(`#/prompt/${x.id}`, PROMPT_LOOK, x.title, x.text.split("\n")[0], "", isNew(x.added))).join("")}</div>` : ""}
+      ${sg.length || sp.length ? "" : `<div class="empty-card">${icon("heart")}<b>Пока пусто</b><p>Нажми на сердечко у гайда или промпта, и он появится здесь</p><button class="cta" data-go="#/home">К гайдам и промптам</button></div>`}
+    </section>`;
+  }
+
   // ---------- router ----------
   function go(hash) {
     if (location.hash === hash) route();
@@ -610,12 +776,12 @@
 
   async function route() {
     const [, a = "home", b, c] = (location.hash || "#/home").split("/");
-    const tab = a === "account" || a === "doc" || a === "purchases" ? "account" : "home";
+    const tab = ["account", "doc", "purchases", "saved"].includes(a) ? "account" : "home";
     const deep = !["home", "account", ""].includes(a);
     tabbar.dataset.at = tab;
     tabbar.querySelectorAll(".tab").forEach((t) => t.setAttribute("aria-selected", String(t.dataset.tab === tab)));
     tabbar.classList.toggle("hide", deep);
-    document.body.classList.toggle("white", ["home", "", "p", "guide", "prompt"].includes(a));
+    document.body.classList.toggle("white", ["home", "", "p", "guide", "prompt", "search"].includes(a));
     applyTheme();
     if (tg) deep ? tg.BackButton.show() : tg.BackButton.hide();
     window.scrollTo(0, 0);
@@ -632,6 +798,8 @@
       else if (a === "account") await screenAccount();
       else if (a === "purchases") await screenPurchases();
       else if (a === "doc" && b) await screenDoc(d(b));
+      else if (a === "search") await screenSearch();
+      else if (a === "saved") await screenSaved();
       else await screenHome();
     } catch (e) {
       view.innerHTML = `<div class="empty">Не получилось загрузить. Проверь интернет и открой ещё раз</div>`;
@@ -640,8 +808,11 @@
   }
 
   document.addEventListener("click", (e) => {
-    const el = e.target.closest("[data-go],[data-link],[data-tab],[data-cat]");
+    const el = e.target.closest("[data-go],[data-link],[data-tab],[data-cat],[data-fav],[data-share],[data-onb]");
     if (!el) return;
+    if (el.dataset.fav) return toggleFav(el.dataset.fav);
+    if (el.dataset.share) return share(...el.dataset.share.split("|"));
+    if (el.dataset.onb) return (haptic(), showOnboarding(Number(el.dataset.onb)));
     if (el.dataset.cat) return selectCat(el.dataset.cat);
     if (el.dataset.tab) {
       haptic();
@@ -659,9 +830,12 @@
   paintIcons();
   tg?.ready();
   tg?.expand();
-  // Deep link: t.me/<bot>/<app>?startapp=guide_reel-20 opens that guide.
+  // Deep link: t.me/<bot>?startapp=guide_<slug> | prompt_<id> | glossary (main mini app). Share links go via the bot instead.
   const start = tg?.initDataUnsafe?.start_param;
-  if (start?.startsWith("guide_") && !location.hash) location.hash = `#/guide/${start.slice(6)}`;
-  if (start === "glossary" && !location.hash) location.hash = "#/glossary";
-  route();
+  const deepLink = start && /^(guide|g)_(.+)$/.exec(start) ? `#/guide/${start.replace(/^(guide|g)_/, "")}` : start && /^(prompt|p)_(.+)$/.exec(start) ? `#/prompt/${start.replace(/^(prompt|p)_/, "")}` : start === "glossary" ? "#/glossary" : null;
+  if (deepLink && !location.hash) location.hash = deepLink;
+  loadState().then(() => {
+    route();
+    if (!state.onboarded && !deepLink && !location.hash.startsWith("#/doc")) showOnboarding(0);
+  });
 })();

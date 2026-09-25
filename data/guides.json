@@ -12,7 +12,10 @@
     "c1": "#2E8BFF",
     "c2": "#0A4FD6",
     "file": "guides/claude-start.md",
-    "date": "2026-09-26"
+    "date": "2026-09-26",
+    "topics": [
+      "claude"
+    ]
   },
   {
     "slug": "reel-20",
@@ -27,7 +30,10 @@
     "c1": "#FF375F",
     "c2": "#E5214A",
     "file": "guides/reel-20.md",
-    "date": "2026-09-25"
+    "date": "2026-09-25",
+    "topics": [
+      "content"
+    ]
   },
   {
     "slug": "skills-start",
@@ -41,7 +47,10 @@
     "c1": "#AF52DE",
     "c2": "#8A2FC0",
     "file": "guides/skills-start.md",
-    "date": "2026-09-26"
+    "date": "2026-09-26",
+    "topics": [
+      "claude"
+    ]
   },
   {
     "slug": "content-free",
@@ -56,7 +65,11 @@
     "c1": "#30B0C7",
     "c2": "#1A8FA6",
     "file": "guides/content-free.md",
-    "date": "2026-09-26"
+    "date": "2026-09-26",
+    "topics": [
+      "content",
+      "design"
+    ]
   },
   {
     "slug": "family-code",
@@ -70,6 +83,9 @@
     "c1": "#34C759",
     "c2": "#1F9A44",
     "file": "guides/family-code.md",
-    "date": "2026-09-26"
+    "date": "2026-09-26",
+    "topics": [
+      "life"
+    ]
   }
 ]

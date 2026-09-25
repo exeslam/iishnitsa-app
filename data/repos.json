@@ -1,0 +1,359 @@
+{
+  "updated": "2026-09-25",
+  "sections": [
+    {
+      "id": "agents",
+      "title": "Claude Code и агенты",
+      "emoji": "🤖",
+      "items": [
+        {
+          "name": "anthropics/claude-code",
+          "what": "ИИ-агент в терминале. Пишешь задачу обычными словами, он сам читает файлы, пишет код и запускает команды.",
+          "license": "Proprietary",
+          "note": "Код не open source, все права у Anthropic. Нужна подписка Claude Pro или Max либо оплата по API. В репозитории issues, changelog и примеры плагинов.",
+          "url": "https://github.com/anthropics/claude-code",
+          "tags": [
+            "148k ⭐",
+            "новичок"
+          ]
+        },
+        {
+          "name": "anthropics/skills",
+          "what": "Официальная папка готовых скиллов от Anthropic: документы Word, PDF, презентации, таблицы, дизайн, создание своих скиллов.",
+          "license": "Mixed",
+          "note": "Общей лицензии в корне нет, у каждого скилла своя. docx, pdf, pptx, xlsx закрытые (source-available), остальные Apache-2.0.",
+          "url": "https://github.com/anthropics/skills",
+          "tags": [
+            "178k ⭐",
+            "новичок"
+          ]
+        },
+        {
+          "name": "anthropics/claude-plugins-official",
+          "what": "Официальный магазин плагинов для Claude Code. Ставишь одной командой /plugin install и получаешь готовые наборы скиллов и агентов.",
+          "license": "Apache-2.0",
+          "note": "В папке external_plugins плагины сторонних авторов, Anthropic их не проверяет. Смотри, что ставишь.",
+          "url": "https://github.com/anthropics/claude-plugins-official",
+          "tags": [
+            "37k ⭐",
+            "новичок"
+          ]
+        },
+        {
+          "name": "hesreallyhim/awesome-claude-code",
+          "what": "Большой ручной список всего полезного для Claude Code: скиллы, хуки, команды, плагины, статусбары, гайды.",
+          "license": "CC-BY-NC-ND-4.0",
+          "note": "Список можно читать и ссылаться. Копировать и переделывать в коммерческих целях лицензия не разрешает.",
+          "url": "https://github.com/hesreallyhim/awesome-claude-code",
+          "tags": [
+            "55k ⭐",
+            "новичок"
+          ]
+        },
+        {
+          "name": "openai/codex",
+          "what": "Агент от OpenAI в терминале, аналог Claude Code. Работает на моделях GPT.",
+          "license": "Apache-2.0",
+          "note": "Нужна подписка ChatGPT или ключ OpenAI API.",
+          "url": "https://github.com/openai/codex",
+          "tags": [
+            "126k ⭐",
+            "новичок"
+          ]
+        },
+        {
+          "name": "google-gemini/gemini-cli",
+          "what": "Агент от Google в терминале на моделях Gemini. Хороший способ попробовать агентов почти бесплатно.",
+          "license": "Apache-2.0",
+          "note": "Нужен Google-аккаунт. По README бесплатно до 60 запросов в минуту и 1000 в день, условия могут меняться.",
+          "url": "https://github.com/google-gemini/gemini-cli",
+          "tags": [
+            "107k ⭐",
+            "новичок"
+          ]
+        },
+        {
+          "name": "anomalyco/opencode",
+          "what": "Открытый агент в терминале, который работает с разными моделями: Claude, GPT, Gemini, локальные.",
+          "license": "MIT",
+          "note": "Раньше жил по адресу sst/opencode, старая ссылка переадресует сюда. Модели оплачиваешь отдельно.",
+          "url": "https://github.com/anomalyco/opencode",
+          "tags": [
+            "210k ⭐",
+            "средний"
+          ]
+        },
+        {
+          "name": "cline/cline",
+          "what": "Агент внутри редактора VS Code: пишет и правит код, спрашивает разрешение на каждый шаг.",
+          "license": "Apache-2.0",
+          "note": "Нужен свой ключ API модели или подписка провайдера.",
+          "url": "https://github.com/cline/cline",
+          "tags": [
+            "69k ⭐",
+            "новичок"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "mcp",
+      "title": "MCP: подключаем агента к сервисам",
+      "emoji": "🔌",
+      "items": [
+        {
+          "name": "modelcontextprotocol/servers",
+          "what": "Официальные эталонные MCP-серверы: файлы, git, память, получение веб-страниц, время. С них удобно начинать.",
+          "license": "MIT / Apache-2.0",
+          "note": "Проект переходит с MIT на Apache-2.0, часть кода ещё под MIT. Это примеры, для рабочих задач авторы советуют проверять код.",
+          "url": "https://github.com/modelcontextprotocol/servers",
+          "tags": [
+            "91k ⭐",
+            "новичок"
+          ]
+        },
+        {
+          "name": "microsoft/playwright-mcp",
+          "what": "Даёт агенту браузер: открыть сайт, нажать кнопку, заполнить форму, проверить свою вёрстку.",
+          "license": "Apache-2.0",
+          "note": "Официальный сервер от Microsoft. Не давай ему заходить в свои аккаунты без присмотра.",
+          "url": "https://github.com/microsoft/playwright-mcp",
+          "tags": [
+            "38k ⭐",
+            "новичок"
+          ]
+        },
+        {
+          "name": "ChromeDevTools/chrome-devtools-mcp",
+          "what": "Подключает агента к Chrome и инструментам разработчика: видит ошибки сайта, скорость загрузки, запросы.",
+          "license": "Apache-2.0",
+          "note": "Официальный проект команды Chrome DevTools.",
+          "url": "https://github.com/ChromeDevTools/chrome-devtools-mcp",
+          "tags": [
+            "53k ⭐",
+            "средний"
+          ]
+        },
+        {
+          "name": "github/github-mcp-server",
+          "what": "Агент работает с GitHub: читает репозитории, задачи, pull request, может их создавать.",
+          "license": "MIT",
+          "note": "Официальный сервер GitHub. Нужен вход в GitHub, выдавай минимум прав.",
+          "url": "https://github.com/github/github-mcp-server",
+          "tags": [
+            "33k ⭐",
+            "средний"
+          ]
+        },
+        {
+          "name": "upstash/context7",
+          "what": "Подкладывает агенту свежую документацию библиотек, чтобы он не писал код по устаревшим примерам.",
+          "license": "MIT",
+          "note": "Работает через облако Upstash. Бесплатный ключ на context7.com даёт больше запросов.",
+          "url": "https://github.com/upstash/context7",
+          "tags": [
+            "62k ⭐",
+            "новичок"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "video",
+      "title": "Видео и контент",
+      "emoji": "🎬",
+      "items": [
+        {
+          "name": "remotion-dev/remotion",
+          "what": "Делает видео кодом на React. Агент пишет сцены, Remotion рендерит MP4.",
+          "license": "Remotion License",
+          "note": "Бесплатно для частных лиц и компаний до 3 сотрудников. Компаниям больше нужна платная лицензия.",
+          "url": "https://github.com/remotion-dev/remotion",
+          "tags": [
+            "60k ⭐",
+            "средний"
+          ]
+        },
+        {
+          "name": "heygen-com/hyperframes",
+          "what": "Пишешь видео как веб-страницу на HTML, получаешь ролик. Сделано специально под ИИ-агентов.",
+          "license": "Apache-2.0",
+          "note": "Проект от HeyGen. Нужны Node.js 22 или новее и FFmpeg.",
+          "url": "https://github.com/heygen-com/hyperframes",
+          "tags": [
+            "53k ⭐",
+            "средний"
+          ]
+        },
+        {
+          "name": "yt-dlp/yt-dlp",
+          "what": "Скачивает видео и аудио с YouTube и тысяч других сайтов одной командой.",
+          "license": "Unlicense",
+          "note": "Скачивай только то, на что есть права. Чужие ролики для референса, не для перезалива.",
+          "url": "https://github.com/yt-dlp/yt-dlp",
+          "tags": [
+            "194k ⭐",
+            "новичок"
+          ]
+        },
+        {
+          "name": "openai/whisper",
+          "what": "Бесплатно превращает речь из видео или аудио в текст, понимает русский.",
+          "license": "MIT",
+          "note": "Работает на своём компьютере, на слабом ноутбуке медленно. Для скорости смотри whisper.cpp.",
+          "url": "https://github.com/openai/whisper",
+          "tags": [
+            "110k ⭐",
+            "средний"
+          ]
+        },
+        {
+          "name": "ggml-org/whisper.cpp",
+          "what": "Быстрая версия Whisper, хорошо работает на Mac с чипами M1 и новее. Делает субтитры локально.",
+          "license": "MIT",
+          "note": "Нужно собрать или поставить через Homebrew, модели скачиваются отдельно.",
+          "url": "https://github.com/ggml-org/whisper.cpp",
+          "tags": [
+            "54k ⭐",
+            "средний"
+          ]
+        },
+        {
+          "name": "m-bain/whisperX",
+          "what": "Whisper с точными таймкодами каждого слова и разделением голосов. Удобно для субтитров по словам.",
+          "license": "BSD-2-Clause",
+          "note": "Лучше всего работает на видеокарте NVIDIA. Разделение голосов требует токен Hugging Face.",
+          "url": "https://github.com/m-bain/whisperX",
+          "tags": [
+            "24k ⭐",
+            "средний"
+          ]
+        },
+        {
+          "name": "FFmpeg/FFmpeg",
+          "what": "Главный инструмент для видео и звука: обрезать, склеить, сжать, сменить формат. Им пользуются почти все программы выше.",
+          "license": "LGPL-2.1-or-later",
+          "note": "Это зеркало исходников, новичку проще поставить готовую сборку (brew install ffmpeg). Часть сборок под GPL.",
+          "url": "https://github.com/FFmpeg/FFmpeg",
+          "tags": [
+            "65k ⭐",
+            "новичок"
+          ]
+        },
+        {
+          "name": "HandBrake/HandBrake",
+          "what": "Программа с окнами и кнопками для сжатия и перекодирования видео, без командной строки.",
+          "license": "GPL-2.0",
+          "note": "Готовые версии для Mac и Windows на handbrake.fr.",
+          "url": "https://github.com/HandBrake/HandBrake",
+          "tags": [
+            "24k ⭐",
+            "новичок"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "local",
+      "title": "Локальный ИИ",
+      "emoji": "💻",
+      "items": [
+        {
+          "name": "ollama/ollama",
+          "what": "Запускает открытые нейросети (Qwen, Gemma, DeepSeek и другие) прямо на твоём компьютере, без интернета и оплаты.",
+          "license": "MIT",
+          "note": "На 8 ГБ памяти тянет только маленькие модели. LM Studio похожая программа, но она не open source.",
+          "url": "https://github.com/ollama/ollama",
+          "tags": [
+            "182k ⭐",
+            "новичок"
+          ]
+        },
+        {
+          "name": "open-webui/open-webui",
+          "what": "Интерфейс как у ChatGPT для своих моделей из Ollama или любого API.",
+          "license": "Open WebUI License",
+          "note": "Своя лицензия: нельзя убирать брендинг Open WebUI, если пользователей больше порога из лицензии, без платной лицензии.",
+          "url": "https://github.com/open-webui/open-webui",
+          "tags": [
+            "153k ⭐",
+            "средний"
+          ]
+        },
+        {
+          "name": "Comfy-Org/ComfyUI",
+          "what": "Генерация картинок и видео локально через схему из блоков. Стандарт для Stable Diffusion и Flux.",
+          "license": "GPL-3.0",
+          "note": "Нужна мощная видеокарта или Mac с большим объёмом памяти. Старая ссылка comfyanonymous/ComfyUI переадресует сюда.",
+          "url": "https://github.com/Comfy-Org/ComfyUI",
+          "tags": [
+            "135k ⭐",
+            "средний"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "build",
+      "title": "Автоматизация и сайты",
+      "emoji": "🛠",
+      "items": [
+        {
+          "name": "n8n-io/n8n",
+          "what": "Собираешь автоматизации из блоков мышкой: пришла заявка, ИИ ответил, записал в таблицу, прислал в Telegram.",
+          "license": "Sustainable Use License",
+          "note": "Fair-code, не классический open source. Для себя и своего бизнеса можно, продавать n8n как сервис нельзя.",
+          "url": "https://github.com/n8n-io/n8n",
+          "tags": [
+            "206k ⭐",
+            "новичок"
+          ]
+        },
+        {
+          "name": "supabase/supabase",
+          "what": "Готовая база данных, вход пользователей и хранилище файлов для твоего приложения. Агенты умеют с ней работать.",
+          "license": "Apache-2.0",
+          "note": "Удобнее всего облачная версия с бесплатным тарифом, лимиты смотри на supabase.com.",
+          "url": "https://github.com/supabase/supabase",
+          "tags": [
+            "111k ⭐",
+            "средний"
+          ]
+        },
+        {
+          "name": "shadcn-ui/ui",
+          "what": "Набор красивых готовых кнопок, форм и окон для сайтов. Агенты чаще всего собирают интерфейсы именно на нём.",
+          "license": "MIT",
+          "note": "Работает с React и Tailwind.",
+          "url": "https://github.com/shadcn-ui/ui",
+          "tags": [
+            "125k ⭐",
+            "средний"
+          ]
+        },
+        {
+          "name": "vercel/next.js",
+          "what": "Самый популярный фреймворк для сайтов и веб-приложений на React. Агенты знают его лучше всего.",
+          "license": "MIT",
+          "note": "Проще всего выкладывать на Vercel, у которого есть бесплатный тариф.",
+          "url": "https://github.com/vercel/next.js",
+          "tags": [
+            "142k ⭐",
+            "средний"
+          ]
+        },
+        {
+          "name": "withastro/astro",
+          "what": "Фреймворк для быстрых лендингов, блогов и сайтов с контентом. Проще Next.js для простого сайта.",
+          "license": "MIT",
+          "note": "Лучший выбор, если нужен лендинг, а не сложное приложение.",
+          "url": "https://github.com/withastro/astro",
+          "tags": [
+            "63k ⭐",
+            "средний"
+          ]
+        }
+      ]
+    }
+  ]
+}

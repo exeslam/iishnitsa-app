@@ -1,0 +1,265 @@
+{
+  "updated": "2026-09-25",
+  "intro": "Скилл это папка с инструкцией SKILL.md, которую Claude подгружает, когда она нужна, или по команде /имя. Так ты один раз объясняешь, как делать задачу, и больше не копируешь промпт в чат.",
+  "sections": [
+    {
+      "id": "what",
+      "title": "Что это",
+      "emoji": "🧩",
+      "items": [
+        {
+          "name": "Скилл (Skill)",
+          "what": "Папка с файлом SKILL.md: инструкция, знания или готовый порядок действий. Claude подгружает её сам, когда задача подходит по описанию, или ты вызываешь её командой /имя-скилла.",
+          "license": "",
+          "note": "Полный текст скилла грузится только при использовании, поэтому скиллы почти не тратят контекст. Хранятся в ~/.claude/skills (для всех проектов) или .claude/skills (для одного проекта).",
+          "url": "https://code.claude.com/docs/en/skills",
+          "tags": [
+            "официально"
+          ]
+        },
+        {
+          "name": "CLAUDE.md и память",
+          "what": "Файл с постоянными правилами проекта, который Claude читает в начале каждой сессии целиком. Отличие от скилла: CLAUDE.md грузится всегда, скилл только по требованию.",
+          "license": "",
+          "note": "Официальный совет: держать CLAUDE.md до 200 строк, длинные инструкции выносить в скиллы. Есть ещё авто-память, которую Claude пишет сам.",
+          "url": "https://code.claude.com/docs/en/memory",
+          "tags": [
+            "официально"
+          ]
+        },
+        {
+          "name": "Slash-команда",
+          "what": "Вызов через /имя. Встроенные команды вроде /clear и /model управляют сессией, свои команды теперь делают как скиллы.",
+          "license": "",
+          "note": "Старые файлы в .claude/commands продолжают работать, но документация называет скиллы рекомендуемой заменой. В новых текстах Anthropic пишет просто Commands.",
+          "url": "https://code.claude.com/docs/en/commands",
+          "tags": [
+            "официально"
+          ]
+        },
+        {
+          "name": "Субагент",
+          "what": "Отдельный помощник со своим контекстом, своими инструкциями и инструментами. Делает поручение и возвращает только итог.",
+          "license": "",
+          "note": "Отличие от скилла: скилл добавляет знания в основной разговор, субагент работает отдельно и не засоряет его.",
+          "url": "https://code.claude.com/docs/en/sub-agents",
+          "tags": [
+            "официально"
+          ]
+        },
+        {
+          "name": "Хук (hook)",
+          "what": "Скрипт или действие, которое Claude Code запускает автоматически в определённый момент, например после каждой правки файла.",
+          "license": "",
+          "note": "Отличие от скилла: хук срабатывает всегда и одинаково, скилл Claude читает и применяет по ситуации. Жёсткие запреты делают хуками.",
+          "url": "https://code.claude.com/docs/en/hooks-guide",
+          "tags": [
+            "официально"
+          ]
+        },
+        {
+          "name": "MCP",
+          "what": "Открытый протокол, через который агент подключается к внешним сервисам: браузер, GitHub, базы данных, Notion.",
+          "license": "",
+          "note": "MCP даёт инструменты и доступ, скилл даёт знания, как этими инструментами пользоваться. Они хорошо работают вместе.",
+          "url": "https://code.claude.com/docs/en/mcp",
+          "tags": [
+            "официально"
+          ]
+        },
+        {
+          "name": "Плагин",
+          "what": "Упаковка, в которой лежат скиллы, хуки, субагенты и MCP-серверы. Ставится одной командой из маркетплейса.",
+          "license": "",
+          "note": "Скиллы из плагина получают приставку, например /plugin-name:skill, чтобы не путаться с твоими.",
+          "url": "https://code.claude.com/docs/en/plugins/overview",
+          "tags": [
+            "официально"
+          ]
+        },
+        {
+          "name": "Agent Skills, открытый стандарт",
+          "what": "Формат скиллов открыт и работает не только в Claude Code, но и в приложении Claude и через API.",
+          "license": "",
+          "note": "Claude Code расширяет стандарт своими настройками вызова.",
+          "url": "https://platform.claude.com/docs/en/agents-and-tools/agent-skills/overview",
+          "tags": [
+            "официально"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "list",
+      "title": "Полезные скиллы",
+      "emoji": "⭐",
+      "items": [
+        {
+          "name": "skill-creator",
+          "what": "Помогает создать свой скилл с нуля, улучшить его и проверить, срабатывает ли он когда нужно.",
+          "license": "Apache-2.0",
+          "note": "Лучший первый скилл: с ним делаешь все остальные.",
+          "url": "https://github.com/anthropics/skills/tree/main/skills/skill-creator",
+          "tags": [
+            "anthropics/skills",
+            "новичок"
+          ]
+        },
+        {
+          "name": "docx",
+          "what": "Создаёт и правит документы Word: заголовки, таблицы, оглавление, правки и комментарии.",
+          "license": "Proprietary",
+          "note": "Исходники открыты для чтения, но лицензия закрытая. Встроен в приложение Claude.",
+          "url": "https://github.com/anthropics/skills/tree/main/skills/docx",
+          "tags": [
+            "anthropics/skills",
+            "новичок"
+          ]
+        },
+        {
+          "name": "pdf",
+          "what": "Всё с PDF: достать текст и таблицы, склеить, разрезать, заполнить форму, распознать скан.",
+          "license": "Proprietary",
+          "note": "Лицензия закрытая, исходники можно смотреть.",
+          "url": "https://github.com/anthropics/skills/tree/main/skills/pdf",
+          "tags": [
+            "anthropics/skills",
+            "новичок"
+          ]
+        },
+        {
+          "name": "pptx",
+          "what": "Делает и редактирует презентации PowerPoint, достаёт из них текст.",
+          "license": "Proprietary",
+          "note": "Лицензия закрытая, исходники можно смотреть.",
+          "url": "https://github.com/anthropics/skills/tree/main/skills/pptx",
+          "tags": [
+            "anthropics/skills",
+            "новичок"
+          ]
+        },
+        {
+          "name": "xlsx",
+          "what": "Работает с таблицами Excel и CSV: формулы, чистка данных, графики.",
+          "license": "Proprietary",
+          "note": "Лицензия закрытая, исходники можно смотреть.",
+          "url": "https://github.com/anthropics/skills/tree/main/skills/xlsx",
+          "tags": [
+            "anthropics/skills",
+            "новичок"
+          ]
+        },
+        {
+          "name": "frontend-design",
+          "what": "Учит Claude делать интерфейсы с характером, а не шаблонный сайт как у всех.",
+          "license": "Apache-2.0",
+          "note": "Есть и как плагин в claude-plugins-official.",
+          "url": "https://github.com/anthropics/skills/tree/main/skills/frontend-design",
+          "tags": [
+            "anthropics/skills",
+            "новичок"
+          ]
+        },
+        {
+          "name": "webapp-testing",
+          "what": "Проверяет твой сайт в браузере через Playwright: кликает, делает скриншоты, читает ошибки.",
+          "license": "Apache-2.0",
+          "note": "Нужен установленный Playwright.",
+          "url": "https://github.com/anthropics/skills/tree/main/skills/webapp-testing",
+          "tags": [
+            "anthropics/skills",
+            "средний"
+          ]
+        },
+        {
+          "name": "mcp-builder",
+          "what": "Пошаговое руководство, как сделать свой MCP-сервер, чтобы подключить агента к любому сервису.",
+          "license": "Apache-2.0",
+          "note": "Для тех, кому не хватает готовых MCP.",
+          "url": "https://github.com/anthropics/skills/tree/main/skills/mcp-builder",
+          "tags": [
+            "anthropics/skills",
+            "средний"
+          ]
+        },
+        {
+          "name": "web-artifacts-builder",
+          "what": "Собирает сложные HTML-страницы и мини-приложения на React, Tailwind и shadcn/ui.",
+          "license": "Apache-2.0",
+          "note": "Изначально для артефактов claude.ai.",
+          "url": "https://github.com/anthropics/skills/tree/main/skills/web-artifacts-builder",
+          "tags": [
+            "anthropics/skills",
+            "средний"
+          ]
+        },
+        {
+          "name": "canvas-design",
+          "what": "Делает постеры и статичные визуалы в PNG и PDF по заданной идее.",
+          "license": "Apache-2.0",
+          "note": "",
+          "url": "https://github.com/anthropics/skills/tree/main/skills/canvas-design",
+          "tags": [
+            "anthropics/skills",
+            "новичок"
+          ]
+        },
+        {
+          "name": "theme-factory",
+          "what": "Применяет к слайдам, документам и страницам одну из 10 готовых тем или придумывает новую.",
+          "license": "Apache-2.0",
+          "note": "",
+          "url": "https://github.com/anthropics/skills/tree/main/skills/theme-factory",
+          "tags": [
+            "anthropics/skills",
+            "новичок"
+          ]
+        },
+        {
+          "name": "doc-coauthoring",
+          "what": "Ведёт по шагам совместного написания документов: ТЗ, предложения, описания решений.",
+          "license": "Apache-2.0",
+          "note": "",
+          "url": "https://github.com/anthropics/skills/tree/main/skills/doc-coauthoring",
+          "tags": [
+            "anthropics/skills",
+            "новичок"
+          ]
+        },
+        {
+          "name": "algorithmic-art",
+          "what": "Генеративное искусство кодом на p5.js: узоры, частицы, потоки.",
+          "license": "Apache-2.0",
+          "note": "Хорошо для обложек и фонов.",
+          "url": "https://github.com/anthropics/skills/tree/main/skills/algorithmic-art",
+          "tags": [
+            "anthropics/skills",
+            "средний"
+          ]
+        },
+        {
+          "name": "brand-guidelines",
+          "what": "Пример скилла с фирменными цветами и шрифтами Anthropic. Удобный шаблон для скилла со своим брендом.",
+          "license": "Apache-2.0",
+          "note": "Сам по себе оформляет в стиле Anthropic, для себя поменяй цвета и шрифты.",
+          "url": "https://github.com/anthropics/skills/tree/main/skills/brand-guidelines",
+          "tags": [
+            "anthropics/skills",
+            "средний"
+          ]
+        },
+        {
+          "name": "claude-api",
+          "what": "Справочник по Claude API: модели, цены, параметры, инструменты, кэширование.",
+          "license": "Apache-2.0",
+          "note": "Полезен, когда пишешь своё приложение на Claude API.",
+          "url": "https://github.com/anthropics/skills/tree/main/skills/claude-api",
+          "tags": [
+            "anthropics/skills",
+            "средний"
+          ]
+        }
+      ]
+    }
+  ]
+}

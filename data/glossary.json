@@ -1,0 +1,190 @@
+{
+ "updated": "2026-09-25",
+ "terms": [
+  {
+   "cat": "Основы нейронок",
+   "term": "LLM",
+   "what": "Нейросеть, которая обучилась на огромном объёме текста. Пишет тексты, отвечает на вопросы, переводит, пишет код. ChatGPT, Claude и Gemini работают на LLM.",
+   "en": "large language model",
+   "url": "https://platform.claude.com/docs/en/about-claude/glossary"
+  },
+  {
+   "cat": "Основы нейронок",
+   "term": "Токен",
+   "what": "Маленький кусочек текста, которым считает нейронка. Не слово и не буква, а что-то между. По токенам считают и лимиты, и цену.",
+   "en": "token",
+   "more": "У Claude один токен это в среднем около 3,5 символа английского текста.",
+   "url": "https://platform.claude.com/docs/en/about-claude/glossary"
+  },
+  {
+   "cat": "Основы нейронок",
+   "term": "Контекстное окно",
+   "what": "Рабочая память нейронки на один разговор. Сколько текста она видит сразу, включая твои сообщения, файлы и свои ответы.",
+   "en": "context window",
+   "more": "Когда окно заполняется, старое начинает выпадать. Поэтому в длинном чате нейронка забывает, о чём договорились в начале.",
+   "url": "https://code.claude.com/docs/en/context-window"
+  },
+  {
+   "cat": "Основы нейронок",
+   "term": "Промпт",
+   "what": "Твой запрос к нейронке. Чем понятнее роль, задача, формат и ограничения, тем лучше ответ.",
+   "en": "prompt",
+   "url": "https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/overview"
+  },
+  {
+   "cat": "Основы нейронок",
+   "term": "Системный промпт",
+   "what": "Правила и роль на весь разговор, которые нейронка получает до твоих сообщений. Например, отвечай коротко, ты юрист.",
+   "en": "system prompt",
+   "url": "https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/system-prompts"
+  },
+  {
+   "cat": "Основы нейронок",
+   "term": "Агент",
+   "what": "Нейронка с инструментами. Не просто отвечает, а сама читает файлы, запускает команды, проверяет результат и повторяет, пока задача не решена.",
+   "en": "agent",
+   "url": "https://code.claude.com/docs/en/how-claude-code-works"
+  },
+  {
+   "cat": "Основы нейронок",
+   "term": "API и API-ключ",
+   "what": "API это способ, которым программы общаются друг с другом. API-ключ это секретный пароль, по которому сервис понимает, кто ты, и списывает деньги.",
+   "en": "API key",
+   "more": "Ключ никому не показывай и не вставляй в чаты. С ним кто угодно потратит твои деньги.",
+   "url": "https://developer.mozilla.org/en-US/docs/Glossary/API"
+  },
+  {
+   "cat": "Основы нейронок",
+   "term": "Вайбкодинг",
+   "what": "Когда ты описываешь словами, что хочешь, а код пишет нейронка. Ты проверяешь результат, а не каждую строчку.",
+   "en": "vibe coding",
+   "more": "Слово придумал Андрей Карпатый, один из основателей OpenAI, в посте 2 февраля 2025.",
+   "url": "https://x.com/karpathy/status/1886192184808149383"
+  },
+  {
+   "cat": "Claude Code",
+   "term": "Claude Code",
+   "what": "Агент от Anthropic, который пишет и правит код прямо на твоём компьютере. Работает в терминале, в редакторе кода, в приложении и в браузере.",
+   "url": "https://code.claude.com/docs/en/overview"
+  },
+  {
+   "cat": "Claude Code",
+   "term": "Скилл",
+   "what": "Инструкция в файле SKILL.md, которая учит Claude делать конкретную задачу по-твоему. Подключается сама, когда подходит по описанию, или по команде /название.",
+   "en": "skill",
+   "more": "Пока скилл не нужен, Claude видит только его короткое описание, поэтому скиллов можно поставить много.",
+   "url": "https://code.claude.com/docs/en/skills"
+  },
+  {
+   "cat": "Claude Code",
+   "term": "CLAUDE.md и память",
+   "what": "CLAUDE.md это файл с правилами твоего проекта, Claude читает его в начале каждой сессии. А ещё Claude сам ведёт заметки в авто-памяти, чтобы помнить важное между разговорами.",
+   "en": "memory",
+   "more": "Совет из документации держать CLAUDE.md коротким, до 200 строк.",
+   "url": "https://code.claude.com/docs/en/memory"
+  },
+  {
+   "cat": "Claude Code",
+   "term": "MCP",
+   "what": "Открытый стандарт, который подключает нейронку к сервисам и данным. Браузер, почта, Notion, GitHub. Его называют USB-C для ИИ.",
+   "en": "Model Context Protocol",
+   "url": "https://modelcontextprotocol.io/docs/getting-started/intro"
+  },
+  {
+   "cat": "Claude Code",
+   "term": "Субагент",
+   "what": "Отдельный помощник внутри Claude Code со своей памятью и своими инструментами. Делает кусок работы и возвращает только итог, не засоряя основной чат.",
+   "en": "subagent",
+   "url": "https://code.claude.com/docs/en/sub-agents"
+  },
+  {
+   "cat": "Claude Code",
+   "term": "Хук",
+   "what": "Действие, которое срабатывает автоматически на событии. Например, после каждой правки файла запускать проверку. В отличие от просьбы в чате, срабатывает всегда одинаково.",
+   "en": "hook",
+   "url": "https://code.claude.com/docs/en/hooks-guide"
+  },
+  {
+   "cat": "Claude Code",
+   "term": "Плагин",
+   "what": "Готовый набор из скиллов, хуков, субагентов и MCP, который ставится одной командой.",
+   "en": "plugin",
+   "url": "https://code.claude.com/docs/en/plugins/overview"
+  },
+  {
+   "cat": "Claude Code",
+   "term": "Slash-команда",
+   "what": "Команда через слэш, например /plan или /название-скилла. Быстрый способ запустить нужное действие.",
+   "en": "command",
+   "url": "https://code.claude.com/docs/en/commands"
+  },
+  {
+   "cat": "Claude Code",
+   "term": "Plan mode",
+   "what": "Режим, в котором Claude сначала изучает задачу и предлагает план, ничего не меняя в файлах. Включается командой /plan или сочетанием Shift+Tab.",
+   "url": "https://code.claude.com/docs/en/permission-modes"
+  },
+  {
+   "cat": "Код и GitHub",
+   "term": "Репозиторий",
+   "what": "Папка проекта вместе со всей историей изменений.",
+   "en": "repo",
+   "url": "https://docs.github.com/en/repositories/creating-and-managing-repositories/about-repositories"
+  },
+  {
+   "cat": "Код и GitHub",
+   "term": "git",
+   "what": "Программа, которая запоминает каждую версию файлов. Можно откатиться назад, если что-то сломал.",
+   "url": "https://git-scm.com/book/en/v2/Getting-Started-About-Version-Control"
+  },
+  {
+   "cat": "Код и GitHub",
+   "term": "GitHub",
+   "what": "Сайт, где хранят репозитории в облаке, делятся кодом и работают вместе. Здесь лежат почти все полезные бесплатные проекты.",
+   "url": "https://docs.github.com/en/get-started/start-your-journey/about-github-and-git"
+  },
+  {
+   "cat": "Код и GitHub",
+   "term": "Деплой",
+   "what": "Выложить проект в интернет, чтобы он открывался у всех по ссылке.",
+   "en": "deploy"
+  },
+  {
+   "cat": "Код и GitHub",
+   "term": "localhost",
+   "what": "Адрес твоего собственного компьютера. То, что открыто на localhost, видишь только ты.",
+   "url": "https://www.rfc-editor.org/rfc/rfc6761"
+  },
+  {
+   "cat": "Код и GitHub",
+   "term": "Терминал",
+   "what": "Окно, где компьютером управляют текстовыми командами. Именно там живёт Claude Code.",
+   "en": "terminal",
+   "url": "https://developer.mozilla.org/en-US/docs/Learn_web_development/Getting_started/Environment_setup/Command_line"
+  },
+  {
+   "cat": "Код и GitHub",
+   "term": "npm и npx",
+   "what": "npm ставит готовые пакеты для JavaScript. npx запускает пакет сразу, без установки.",
+   "url": "https://docs.npmjs.com/cli/v11/commands/npx"
+  },
+  {
+   "cat": "Лицензии",
+   "term": "MIT",
+   "what": "Можно всё, даже в коммерции. Главное сохранить текст лицензии.",
+   "url": "https://opensource.org/license/mit"
+  },
+  {
+   "cat": "Лицензии",
+   "term": "Apache-2.0",
+   "what": "Как MIT, плюс права на патенты. Если меняешь код, отметь, что поменял.",
+   "url": "https://opensource.org/license/apache-2-0"
+  },
+  {
+   "cat": "Лицензии",
+   "term": "AGPL-3.0",
+   "what": "Если даёшь людям пользоваться изменённой версией через интернет, обязан открыть свой код.",
+   "url": "https://opensource.org/license/agpl-v3"
+  }
+ ]
+}

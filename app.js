@@ -21,6 +21,20 @@
     design: { icon: "palette", c: ["#34C759", "#22A447"] },
     mockups: { icon: "palette", c: ["#34C759", "#22A447"] },
     ai: { icon: "sparkles", c: ["#2E8BFF", "#0A6CFF"] },
+    agents: { icon: "robot", c: ["#FF9F0A", "#F08300"] },
+    mcp: { icon: "plug-connected", c: ["#5E5CE6", "#4B48D6"] },
+    content: { icon: "movie", c: ["#FF375F", "#E5214A"] },
+    local: { icon: "cpu", c: ["#30B0C7", "#1C95AB"] },
+    build: { icon: "rocket", c: ["#34C759", "#22A447"] },
+    what: { icon: "bulb", c: ["#FFCC00", "#F2B600"] },
+    list: { icon: "star", c: ["#FF9F0A", "#F08300"] },
+  };
+
+  // Browsable collections: sections of link items. `tab` decides which tab stays lit.
+  const COLLECTIONS = {
+    library: { file: "data/library.json", title: "Библиотека", sub: "Бесплатные шрифты, стоки, музыка и нейронки", search: "Шрифты, музыка, фото", tab: "library", base: "#/library" },
+    repos: { file: "data/repos.json", title: "Репозитории", sub: "Самое полезное на GitHub, без которого сложно", search: "Агенты, видео, MCP", tab: "base", base: "#/c/repos" },
+    skills: { file: "data/skills.json", title: "Скиллы", sub: "Что это такое и какие поставить первыми", search: "Документы, дизайн", tab: "base", base: "#/c/skills" },
   };
 
   const esc = (s) => String(s ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
@@ -84,7 +98,7 @@
   const cache = {};
   const load = (url, as = "json") => (cache[url] ??= fetch(url, { cache: "no-cache" }).then((r) => (r.ok ? r[as]() : Promise.reject(new Error(url)))));
   const guides = () => load("data/guides.json");
-  const library = () => load("data/library.json");
+  const glossary = () => load("data/glossary.json");
 
   // ---------- Markdown → guide HTML (same dialect as the bot's magnet files) ----------
   function renderGuide(md) {
@@ -219,30 +233,14 @@
     </button>`;
   }
 
-  async function screenLibrary(query = "") {
-    const lib = await library();
-    const q = query.trim().toLowerCase();
-    const hits = q
-      ? lib.sections.flatMap((s) => s.items.filter((it) => [it.name, it.what, it.note, ...(it.tags || [])].join(" ").toLowerCase().includes(q)))
-      : [];
-    view.innerHTML = `<section class="screen">
-      ${hero("Библиотека", "Бесплатные шрифты, стоки, музыка и нейронки")}
-      ${searchBox("Шрифты, музыка, фото", query)}
-      ${q
-        ? hits.length
-          ? `<div class="group">${hits.map(itemHtml).join("")}</div>`
-          : `<div class="empty">Ничего не нашлось</div>`
-        : `<div class="group">${lib.sections.map((s) => `<button class="row" data-go="#/library/${esc(s.id)}">
-            ${symFor(SECTION_LOOK[s.id], s.emoji)}
-            <span class="txt"><div class="t">${esc(s.title)}</div></span>
-            <span class="count">${s.items.length}</span>${icon("chevron-right").replace('class="ti"', 'class="ti chev"')}
-          </button>`).join("")}</div>
-          <p class="foot">Проверено ${esc(lib.updated.split("-").reverse().join("."))}. Лицензии меняются, перед коммерческим использованием загляни на сайт.</p>`}
-    </section>`;
+  const matches = (q, ...fields) => fields.flat().filter(Boolean).join(" ").toLowerCase().includes(q);
+
+  // Re-render on every keystroke but keep focus and caret in the search field.
+  function bindSearch(rerender) {
     const input = view.querySelector(".search input");
-    input.addEventListener("input", () => {
+    input?.addEventListener("input", () => {
       const pos = input.selectionStart;
-      screenLibrary(input.value).then(() => {
+      rerender(input.value).then(() => {
         const next = view.querySelector(".search input");
         next.focus();
         next.setSelectionRange(pos, pos);
@@ -250,15 +248,76 @@
     });
   }
 
-  async function screenSection(id) {
-    const lib = await library();
-    const s = lib.sections.find((x) => x.id === id);
-    if (!s) return go("#/library");
+  const back = (hash, label) => (tg ? "" : `<div class="nav"><button class="back" data-go="${hash}">${icon("chevron-left")}${esc(label)}</button></div>`);
+  const chev = () => icon("chevron-right").replace('class="ti"', 'class="ti chev"');
+  const checked = (d) => `<p class="foot">Проверено ${esc(d.split("-").reverse().join("."))}. Ссылки и лицензии меняются, перед коммерческим использованием загляни на сайт.</p>`;
+
+  async function screenCollection(key, query = "") {
+    const c = COLLECTIONS[key];
+    const data = await load(c.file);
+    const q = query.trim().toLowerCase();
+    const hits = q ? data.sections.flatMap((s) => s.items.filter((it) => matches(q, it.name, it.what, it.note, it.tags || []))) : [];
+    const topLevel = key === "library";
     view.innerHTML = `<section class="screen">
-      ${tg ? "" : `<div class="nav"><button class="back" data-go="#/library">${icon("chevron-left")}Библиотека</button></div>`}
+      ${topLevel ? hero(c.title, c.sub) : `${back("#/base", "База")}<header class="hero"><h1>${esc(c.title)}</h1><p>${esc(c.sub)}</p></header>`}
+      ${data.intro && !q ? `<div class="card-note">${inline(data.intro)}</div>` : ""}
+      ${searchBox(c.search, query)}
+      ${q
+        ? hits.length ? `<div class="group">${hits.map(itemHtml).join("")}</div>` : `<div class="empty">Ничего не нашлось</div>`
+        : `<div class="group">${data.sections.map((s) => `<button class="row" data-go="${c.base}/${esc(s.id)}">
+            ${symFor(SECTION_LOOK[s.id], s.emoji)}
+            <span class="txt"><div class="t">${esc(s.title)}</div></span>
+            <span class="count">${s.items.length}</span>${chev()}
+          </button>`).join("")}</div>${checked(data.updated)}`}
+    </section>`;
+    bindSearch((v) => screenCollection(key, v));
+  }
+
+  async function screenSection(key, id) {
+    const c = COLLECTIONS[key];
+    const data = await load(c.file);
+    const s = data.sections.find((x) => x.id === id);
+    if (!s) return go(c.base);
+    view.innerHTML = `<section class="screen">
+      ${back(c.base, c.title)}
       <header class="hero"><div style="display:flex;align-items:center;gap:12px">${symFor(SECTION_LOOK[s.id], s.emoji)}<h1 style="margin:0">${esc(s.title)}</h1></div></header>
       <div class="group">${s.items.map(itemHtml).join("")}</div>
     </section>`;
+  }
+
+  async function screenBase() {
+    const [g, r, k] = await Promise.all([glossary(), load(COLLECTIONS.repos.file).catch(() => null), load(COLLECTIONS.skills.file).catch(() => null)]);
+    const row = (go, look, t, sub, n) => `<button class="row" data-go="${go}">
+        <span class="sym" style="--c1:${look.c[0]};--c2:${look.c[1]}">${icon(look.icon)}</span>
+        <span class="txt"><div class="t">${t}</div><div class="s">${sub}</div></span>${n ? `<span class="count">${n}</span>` : ""}${chev()}</button>`;
+    const count = (d) => (d ? d.sections.reduce((n, s) => n + s.items.length, 0) : 0);
+    view.innerHTML = `<section class="screen">
+      ${hero("База", "Всё, что нужно понимать, чтобы делать штуки с нейронками")}
+      <div class="group">
+        ${row("#/glossary", { icon: "writing", c: ["#5E5CE6", "#4B48D6"] }, "Словарь вайбкодера", "Агент, скилл, MCP, токен и ещё десятки слов простым языком", g.terms.length)}
+        ${r ? row("#/c/repos", { icon: "git-branch", c: ["#3A3A3C", "#1C1C1E"] }, "Репозитории", "Самые нужные проекты на GitHub", count(r)) : ""}
+        ${k ? row("#/c/skills", { icon: "components", c: ["#FF9F0A", "#F08300"] }, "Скиллы", "Что это и какие поставить первыми", count(k)) : ""}
+      </div>
+    </section>`;
+  }
+
+  async function screenGlossary(query = "") {
+    const g = await glossary();
+    const q = query.trim().toLowerCase();
+    const terms = g.terms.filter((t) => !q || matches(q, t.term, t.en, t.what, t.more));
+    const cats = [...new Set(terms.map((t) => t.cat))];
+    view.innerHTML = `<section class="screen">
+      ${back("#/base", "База")}
+      <header class="hero"><h1>Словарь вайбкодера</h1><p>Нажми на слово, чтобы раскрыть</p></header>
+      ${searchBox("Например, скилл или токен", query)}
+      ${terms.length ? cats.map((cat) => `<div class="caption">${esc(cat)}</div><div class="group">${terms.filter((t) => t.cat === cat).map((t) => `
+        <details class="term"${q ? " open" : ""}>
+          <summary><span class="t">${esc(t.term)}</span>${t.en ? `<span class="en">${esc(t.en)}</span>` : ""}${icon("chevron-down").replace('class="ti"', 'class="ti chev"')}</summary>
+          <div class="body"><p>${inline(t.what)}</p>${t.more ? `<p class="more">${inline(t.more)}</p>` : ""}${t.url ? `<button class="src" data-link="${esc(t.url)}">${icon("link")}Источник</button>` : ""}</div>
+        </details>`).join("")}</div>`).join("") : `<div class="empty">Такого слова пока нет. Напиши в комменты канала, добавлю</div>`}
+    </section>`;
+    view.querySelectorAll("details.term").forEach((d) => d.addEventListener("toggle", () => d.open && haptic()));
+    bindSearch(screenGlossary);
   }
 
   // ---------- router ----------
@@ -268,18 +327,23 @@
   }
 
   async function route() {
-    const [, a = "guides", b] = (location.hash || "#/guides").split("/");
-    const deep = !!b;
-    const tab = a.startsWith("guide") ? "guides" : "library";
+    const [, a = "guides", b, c] = (location.hash || "#/guides").split("/");
+    const tab = a.startsWith("guide") ? "guides" : a === "library" ? "library" : "base";
+    const deep = a === "c" || a === "glossary" || !!(a === "guide" ? b : b);
     tabbar.dataset.at = tab;
     tabbar.querySelectorAll(".tab").forEach((t) => t.setAttribute("aria-selected", String(t.dataset.tab === tab)));
     tabbar.classList.toggle("hide", deep);
     if (tg) deep ? tg.BackButton.show() : tg.BackButton.hide();
     window.scrollTo(0, 0);
+    const d = (x) => decodeURIComponent(x);
     try {
-      if (a === "guide" && b) await screenGuide(decodeURIComponent(b));
-      else if (a === "library" && b) await screenSection(decodeURIComponent(b));
-      else if (a === "library") await screenLibrary();
+      if (a === "guide" && b) await screenGuide(d(b));
+      else if (a === "library" && b) await screenSection("library", d(b));
+      else if (a === "library") await screenCollection("library");
+      else if (a === "c" && b && c) await screenSection(d(b), d(c));
+      else if (a === "c" && b) await screenCollection(d(b));
+      else if (a === "glossary") await screenGlossary();
+      else if (a === "base") await screenBase();
       else await screenGuides();
     } catch (e) {
       view.innerHTML = `<div class="empty">Не получилось загрузить. Проверь интернет и открой ещё раз</div>`;
@@ -311,5 +375,6 @@
   // Deep link: t.me/<bot>/<app>?startapp=guide_reel-20 opens that guide.
   const start = tg?.initDataUnsafe?.start_param;
   if (start?.startsWith("guide_") && !location.hash) location.hash = `#/guide/${start.slice(6)}`;
+  if (start === "glossary" && !location.hash) location.hash = "#/glossary";
   route();
 })();

@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="color-scheme" content="light dark">
+<title>ИИшница</title>
+<link rel="stylesheet" href="app.css">
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+</head>
+<body>
+<div id="app">
+  <main id="view" aria-live="polite"></main>
+  <nav id="tabbar" class="lg-bar" role="tablist">
+    <button role="tab" data-tab="guides" class="tab"><span class="ti" data-icon="school"></span><span>Гайды</span></button>
+    <button role="tab" data-tab="library" class="tab"><span class="ti" data-icon="layout-grid"></span><span>Библиотека</span></button>
+    <span class="lens" aria-hidden="true"></span>
+  </nav>
+  <div id="toast" role="status"></div>
+</div>
+<script src="icons.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

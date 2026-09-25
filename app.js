@@ -64,6 +64,7 @@
   }
 
   async function copy(text, btn) {
+    btn.dataset.label ||= btn.textContent.trim();
     try {
       await navigator.clipboard.writeText(text);
     } catch {
@@ -77,9 +78,10 @@
     haptic("ok");
     btn.classList.add("done");
     btn.innerHTML = `${icon("check")}Скопировано`;
+    const label = btn.dataset.label || (btn.dataset.label = btn.textContent.trim());
     setTimeout(() => {
       btn.classList.remove("done");
-      btn.innerHTML = `${icon("copy")}Скопировать`;
+      btn.innerHTML = `${icon("copy")}${label}`;
     }, 1800);
   }
 
@@ -321,13 +323,32 @@
   }
 
   async function screenPrompt(id) {
-    const p = (await prompts()).prompts.find((x) => x.id === id);
+    const all = (await prompts()).prompts;
+    const p = all.find((x) => x.id === id);
     if (!p) return go("#/home");
-    view.innerHTML = `<section class="screen">
+    const vars = [...new Set((p.text.match(/\[[^\]\n]{1,60}\]/g) || []))];
+    const more = all.filter((x) => x.id !== id).slice(0, 3);
+    view.innerHTML = `<section class="screen prompt">
       ${back("#/home", "Главная")}
-      <article class="doc"><h1>${esc(p.title)}</h1><p class="lead">Скопируй и подставь своё в [скобки]</p>
-      <div class="code"><pre>${esc(p.text)}</pre><div class="bar"><button class="copy" id="cp">${icon("copy")}Скопировать</button></div></div>
-      ${p.from ? `<p><button class="src" data-go="#/guide/${esc(p.from)}">${icon("file-text")}Из гайда</button></p>` : ""}</article>
+      <header class="gcover" style="--a:#6E6CF0;--b:#3D3AC4">
+        <span class="sym big">${icon("writing")}</span>
+        <h1>${esc(p.title)}</h1>
+        <div class="meta">${(p.tags || []).map((t) => `<span class="badge">${esc(t)}</span>`).join("")}<span class="badge">промпт</span></div>
+      </header>
+      <div class="howto">
+        <div><span class="pn">1</span>Скопируй</div>
+        <div><span class="pn">2</span>Замени <span class="var">[скобки]</span></div>
+        <div><span class="pn">3</span>Вставь в нейронку</div>
+      </div>
+      <div class="pcard big"><pre>${hlVars(p.text)}</pre><button class="copy wide primary" id="cp">${icon("copy")}Скопировать промпт</button></div>
+      ${vars.length ? `<div class="vars"><div class="toc-h">Что подставить</div>${vars.map((v) => `<span class="var">${esc(v)}</span>`).join("")}</div>` : ""}
+      <div class="open2">
+        <button class="obtn" data-link="https://claude.ai/new">${icon("sparkles")}Открыть Claude</button>
+        <button class="obtn" data-link="https://chatgpt.com/">${icon("message-circle")}Открыть ChatGPT</button>
+      </div>
+      ${p.from ? `<button class="toc-row solo" data-go="#/guide/${esc(p.from)}"><span class="gemoji sm">📖</span><span>Этот промпт из гайда про монтаж рилса</span>${chev()}</button>` : ""}
+      <div class="fhead"><h2>Ещё промпты</h2></div>
+      <div class="flist">${more.map((x) => card(`#/prompt/${x.id}`, PROMPT_LOOK, x.title, x.text.split("\n")[0])).join("")}</div>
     </section>`;
     view.querySelector("#cp").addEventListener("click", (e) => copy(p.text, e.currentTarget));
   }
@@ -373,18 +394,124 @@
     view.innerHTML = `<section class="screen">${back("#/account", "Аккаунт")}${body}</section>`;
   }
 
+  // ---------- rich guide: cover, contents, timeline steps, prompt cards ----------
+  const hlVars = (s) => esc(s).replace(/\[([^\]\n]{1,60})\]/g, '<span class="var">[$1]</span>');
+
+  function parseGuide(md) {
+    const lines = md.split("\n");
+    const sep = lines.findIndex((l) => l.trim() === "---");
+    const body = sep >= 0 ? lines.slice(sep + 1) : lines;
+    const blocks = [];
+    let buf = [];
+    let inCode = false;
+    const flush = () => buf.length && (blocks.push({ lines: buf }), (buf = []));
+    for (const line of body) {
+      if (line.trim().startsWith("```")) {
+        if (inCode) blocks.push({ code: buf.join("\n")}), (buf = []);
+        else flush();
+        inCode = !inCode;
+        continue;
+      }
+      if (!inCode && line.trim() === "") { flush(); continue; }
+      if (!inCode && /^#{1,2} /.test(line)) { flush(); blocks.push({ lines: [line] }); continue; }
+      buf.push(line);
+    }
+    if (inCode) blocks.push({ code: buf.join("\n") });
+    else flush();
+
+    const intro = { title: "", paras: [] };
+    const sections = [];
+    for (const b of blocks) {
+      const h = b.lines && /^(#{1,2}) (.*)$/.exec(b.lines[0]);
+      if (h && h[1] === "#") intro.title = h[2];
+      else if (h) {
+        const m = /^(\p{Extended_Pictographic}(?:️)?(?:\p{Regional_Indicator})?\s*)?(.*)$/u.exec(h[2]);
+        sections.push({ emoji: (m[1] || "").trim(), title: m[2], blocks: [] });
+      } else if (sections.length) sections.at(-1).blocks.push(b);
+      else if (b.lines) intro.paras.push(b.lines);
+    }
+    return { intro, sections };
+  }
+
+  function sectionBody(sec, codes) {
+    const out = [];
+    const neg = /не |без |🚫/i.test(sec.emoji + " " + sec.title);
+    const bs = sec.blocks;
+    for (let i = 0; i < bs.length; i++) {
+      const b = bs[i];
+      if (b.code !== undefined) {
+        codes.push(b.code);
+        out.push(`<div class="pcard"><pre>${hlVars(b.code)}</pre><button class="copy wide" data-copy="${codes.length - 1}">${icon("copy")}Скопировать</button></div>`);
+        continue;
+      }
+      const l = b.lines;
+      const bold = /^\*\*(.+)\*\*$/.exec(l[0]);
+      if (bold && l.length === 1 && bs[i + 1]?.code !== undefined) {
+        const m = /^(\d+)\. (.*)$/.exec(bold[1]);
+        codes.push(bs[i + 1].code);
+        out.push(`<div class="pcard"><div class="ph">${m ? `<span class="pn">${m[1]}</span>` : ""}<b>${esc(m ? m[2] : bold[1])}</b></div><pre>${hlVars(bs[i + 1].code)}</pre><button class="copy wide" data-copy="${codes.length - 1}">${icon("copy")}Скопировать</button></div>`);
+        i++;
+        continue;
+      }
+      if (bold && l.length > 1) {
+        const m = /^(\d+-\d+) (минута|минуты|сек)\.?\s*(.*)$/.exec(bold[1]);
+        out.push(`<div class="tl-step"><span class="dot"></span>${m ? `<span class="time">${esc(m[1])} ${m[2] === "сек" ? "сек" : "мин"}</span>` : ""}<b>${esc(m ? m[3] : bold[1])}</b><p>${l.slice(1).map(inline).join("<br>")}</p></div>`);
+        continue;
+      }
+      if (l.every((x) => /^\d+-\d+ сек\. /.test(x))) {
+        out.push(`<div class="beats">${l.map((x) => { const m = /^(\d+-\d+) сек\. (.*)$/.exec(x); return `<div class="beat"><span class="time">${m[1]} с</span><span>${inline(m[2])}</span></div>`; }).join("")}</div>`);
+        continue;
+      }
+      if (l.every((x) => /^\d+\. /.test(x))) {
+        out.push(`<div class="ncards">${l.map((x, k) => `<div class="ncard"><span class="pn">${k + 1}</span><p>${inline(x.replace(/^\d+\. /, ""))}</p></div>`).join("")}</div>`);
+        continue;
+      }
+      if (l.every((x) => /^- /.test(x))) {
+        out.push(`<div class="icards">${l.map((x) => `<div class="icard ${neg ? "no" : "yes"}">${icon(neg ? "x" : "check")}<p>${inline(x.slice(2))}</p></div>`).join("")}</div>`);
+        continue;
+      }
+      out.push(`<p class="para">${l.map(inline).join("<br>")}</p>`);
+    }
+    return out.join("");
+  }
+
   async function screenGuide(slug) {
     const list = await guides();
     const g = list.find((x) => x.slug === slug);
     if (!g) return go("#/home");
     const md = await load(g.file, "text");
-    const { html, codes } = renderGuide(md);
-    view.innerHTML = `<section class="screen">
-      ${tg ? "" : `<div class="nav"><button class="back" data-go="#/home">${icon("chevron-left")}Главная</button></div>`}
-      <article class="doc">${html}</article>
-      <button class="cta" data-link="${CHANNEL}">${icon("brand-telegram")}Больше в канале ИИшница</button>
+    const { intro, sections } = parseGuide(md);
+    const codes = [];
+    const words = md.split(/\s+/).length;
+    const mins = Math.max(1, Math.round(words / 180));
+    const body = sections.map((sec, k) => `<section class="gsec" id="g${k}">
+        <div class="gsec-h"><span class="gemoji">${esc(sec.emoji || String(k + 1))}</span><h2>${esc(sec.title)}</h2></div>
+        ${sectionBody(sec, codes)}</section>`).join("");
+    view.innerHTML = `<section class="screen guide">
+      <div class="progress"><i></i></div>
+      ${back("#/home", "Главная")}
+      <header class="gcover" style="--a:${g.c1};--b:${g.c2}">
+        <span class="sym big">${icon(g.icon)}</span>
+        <h1>${esc(intro.title || g.title)}</h1>
+        <p>${esc(g.subtitle)}</p>
+        <div class="meta">${g.tags.map((t) => `<span class="badge">${esc(t)}</span>`).join("")}</div>
+      </header>
+      <div class="author"><img src="avatar.jpg" alt=""><div><b>Умар</b><span>канал ИИшница</span></div><span class="read">${icon("clock")}${mins} мин чтения</span></div>
+      ${intro.paras.slice(1).map((p) => `<p class="lead">${p.map(inline).join("<br>")}</p>`).join("")}
+      <div class="toc"><div class="toc-h">Содержание</div>${sections.map((s, k) => `<button class="toc-row" data-jump="g${k}"><span class="gemoji sm">${esc(s.emoji || String(k + 1))}</span><span>${esc(s.title)}</span>${chev()}</button>`).join("")}</div>
+      ${body}
+      <div class="upsell" data-go="#/p/claude"><span class="badge">Следующий шаг</span><b>Базовая система Claude Code</b><p>Настроим нейронку, которая делает такие штуки за тебя</p><span class="slide-cta">Подробнее${icon("chevron-right")}</span></div>
+      <button class="cta ghost" data-link="${CHANNEL}">${icon("brand-telegram")}Больше в канале ИИшница</button>
     </section>`;
-    view.querySelectorAll("[data-copy]").forEach((b) => b.addEventListener("click", () => copy(codes[Number(b.dataset.copy)].code, b)));
+    view.querySelectorAll("[data-copy]").forEach((b) => b.addEventListener("click", () => copy(codes[Number(b.dataset.copy)], b)));
+    view.querySelectorAll("[data-jump]").forEach((b) => b.addEventListener("click", () => { haptic(); document.getElementById(b.dataset.jump)?.scrollIntoView({ behavior: "smooth", block: "start" }); }));
+    const bar = view.querySelector(".progress i");
+    const onScroll = () => {
+      if (!document.body.contains(bar)) return window.removeEventListener("scroll", onScroll);
+      const max = document.documentElement.scrollHeight - innerHeight;
+      bar.style.transform = `scaleX(${max > 0 ? Math.min(1, scrollY / max) : 0})`;
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
   }
 
   function itemHtml(it) {
@@ -480,7 +607,7 @@
     tabbar.dataset.at = tab;
     tabbar.querySelectorAll(".tab").forEach((t) => t.setAttribute("aria-selected", String(t.dataset.tab === tab)));
     tabbar.classList.toggle("hide", deep);
-    document.body.classList.toggle("white", a === "home" || a === "" || a === "p");
+    document.body.classList.toggle("white", ["home", "", "p", "guide", "prompt"].includes(a));
     applyTheme();
     if (tg) deep ? tg.BackButton.show() : tg.BackButton.hide();
     window.scrollTo(0, 0);

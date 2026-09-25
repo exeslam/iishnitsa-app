@@ -224,6 +224,12 @@
       video: () => [secRow("library", libSec("video")), secRow("library", libSec("music")), secRow("repos", repos.sections.find((s) => s.id === "video"))].filter(Boolean),
       ai: (n) => (libSec("ai")?.items || []).slice(0, n).map((it) => card(it.url, SECTION_LOOK.ai, it.name, it.what, icon("link").replace('class="ti"', 'class="ti chev"'))),
     };
+    if (cat === "prompts") {
+      const order = ["работа", "деньги", "контент", "рилсы", "учёба", "быт", "Claude Code"];
+      const topic = (x) => order.find((t) => (x.tags || []).includes(t)) || "другое";
+      const groups = [...order, "другое"].map((t) => [t, p.prompts.filter((x) => topic(x) === t)]).filter(([, xs]) => xs.length);
+      return groups.map(([t, xs]) => `<div class="fhead"><h2>${esc(t[0].toUpperCase() + t.slice(1))}</h2><span class="count">${xs.length}</span></div><div class="flist">${xs.map((x) => card(`#/prompt/${x.id}`, PROMPT_LOOK, x.title, x.text.split("\n")[0])).join("")}</div>`).join("");
+    }
     if (cat !== "all") return `<div class="flist">${blocks[cat](99).join("")}</div>`;
     const ORDER = ["guides", "prompts", "interesting", "design", "video", "ai"];
     return ORDER.map((id) => CATS.find((c) => c.id === id))
@@ -327,7 +333,9 @@
     const p = all.find((x) => x.id === id);
     if (!p) return go("#/home");
     const vars = [...new Set((p.text.match(/\[[^\]\n]{1,60}\]/g) || []))];
-    const more = all.filter((x) => x.id !== id).slice(0, 3);
+    const same = all.filter((x) => x.id !== id && (x.tags || []).some((t) => (p.tags || []).includes(t)));
+    const more = [...same, ...all.filter((x) => x.id !== id && !same.includes(x))].slice(0, 3);
+    const src = p.from ? (await guides()).find((g) => g.slug === p.from) : null;
     view.innerHTML = `<section class="screen prompt">
       ${back("#/home", "Главная")}
       <header class="gcover" style="--a:#6E6CF0;--b:#3D3AC4">
@@ -346,7 +354,7 @@
         <button class="obtn" data-link="https://claude.ai/new">${icon("sparkles")}Открыть Claude</button>
         <button class="obtn" data-link="https://chatgpt.com/">${icon("message-circle")}Открыть ChatGPT</button>
       </div>
-      ${p.from ? `<button class="toc-row solo" data-go="#/guide/${esc(p.from)}"><span class="gemoji sm">📖</span><span>Этот промпт из гайда про монтаж рилса</span>${chev()}</button>` : ""}
+      ${src ? `<button class="toc-row solo" data-go="#/guide/${esc(src.slug)}"><span class="gemoji sm">📖</span><span>Из гайда "${esc(src.title)}"</span>${chev()}</button>` : ""}
       <div class="fhead"><h2>Ещё промпты</h2></div>
       <div class="flist">${more.map((x) => card(`#/prompt/${x.id}`, PROMPT_LOOK, x.title, x.text.split("\n")[0])).join("")}</div>
     </section>`;
@@ -435,7 +443,7 @@
 
   function sectionBody(sec, codes) {
     const out = [];
-    const neg = /не |без |🚫/i.test(sec.emoji + " " + sec.title);
+    const neg = /не |без |🚫|🚩/iu.test(sec.emoji + " " + sec.title);
     const bs = sec.blocks;
     for (let i = 0; i < bs.length; i++) {
       const b = bs[i];

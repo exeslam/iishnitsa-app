@@ -14,7 +14,9 @@
   "date": "2026-09-29",
   "topics": [
    "claude"
-  ]
+  ],
+  "video": "media/guides/multiagent.mp4",
+  "poster": "media/guides/multiagent.jpg"
  },
  {
   "slug": "whatsapp-ai",
@@ -31,7 +33,9 @@
   "date": "2026-09-28",
   "topics": [
    "claude"
-  ]
+  ],
+  "video": "media/guides/whatsapp-ai.mp4",
+  "poster": "media/guides/whatsapp-ai.jpg"
  },
  {
   "slug": "mit-free",
@@ -49,7 +53,9 @@
   "topics": [
    "life",
    "claude"
-  ]
+  ],
+  "video": "media/guides/mit-free.mp4",
+  "poster": "media/guides/mit-free.jpg"
  },
  {
   "slug": "claude-start",
@@ -67,7 +73,9 @@
   "date": "2026-09-26",
   "topics": [
    "claude"
-  ]
+  ],
+  "video": "media/guides/claude-start.mp4",
+  "poster": "media/guides/claude-start.jpg"
  },
  {
   "slug": "reel-20",

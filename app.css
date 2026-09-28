@@ -376,3 +376,56 @@ body.white{--bg:#FFFFFF;--card:#F5F5F7}
 .onb-skip{margin-top:10px;color:var(--label2);font:600 15px/1 InterMM;padding:8px}
 .search.fake span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .fcard .t .new{vertical-align:1px}
+
+/* ---------- гайды крупными блоками с motion-баннером (29.09) ---------- */
+.gblock{display:block;width:100%;text-align:left;border-radius:26px;overflow:hidden;background:var(--card);box-shadow:var(--shadow);transition:transform .2s}
+.gblock:active{transform:scale(.98)}
+.gb-media{display:block;position:relative;aspect-ratio:16/10;background:#05060A;overflow:hidden}
+.gb-media video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.gb-media:after{content:"";position:absolute;left:0;right:0;bottom:0;height:40%;background:linear-gradient(transparent,color-mix(in srgb,var(--c2) 22%,transparent));pointer-events:none}
+.gb-txt{display:block;padding:14px 16px 16px}
+.gb-txt .t{display:block;font:750 20px/1.2 InterMM;color:var(--label)}
+.gb-txt .s{display:block;margin-top:4px;font-size:14px;line-height:1.35;color:var(--label2)}
+.gb-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.gb-tags .badge{background:color-mix(in srgb,var(--c1) 14%,transparent);color:color-mix(in srgb,var(--c1) 70%,var(--label))}
+
+.gcover.vid{padding:0;background:#05060A}
+.gcover.vid .gc-video{display:block;width:100%;aspect-ratio:16/10;object-fit:cover}
+.gcover.vid .sym.big{display:none}
+.gcover.vid h1,.gcover.vid p,.gcover.vid .meta{padding:0 20px}
+.gcover.vid h1{margin-top:14px}
+.gcover.vid .meta{padding-bottom:20px}
+.gcover.vid .gact{z-index:2}
+
+/* ---------- схемы в гайдах ---------- */
+.diagram{margin:6px 0 16px;padding:16px;border-radius:22px;background:var(--card);box-shadow:0 1px 0 var(--code-line)}
+.dtitle{font:650 13px/1.2 InterMM;letter-spacing:.06em;text-transform:uppercase;color:var(--label2);margin:0 2px 12px}
+.dnode{display:flex;align-items:center;gap:12px;padding:12px;border-radius:16px;background:var(--bg)}
+.dnode b{display:block;font:650 16px/1.25 InterMM}
+.dnode span:not(.dic){display:block;margin-top:2px;font-size:13px;line-height:1.35;color:var(--label2)}
+.dic{flex:none;display:flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:12px;color:#fff;background:linear-gradient(150deg,var(--blue),#0A4FD6)}
+.dic .ti{width:22px;height:22px}
+.dnode.center .dic,.dnode.last .dic{background:linear-gradient(150deg,#34C759,#1E9E45)}
+.dnode.center .dic{background:linear-gradient(150deg,#7B61FF,#4B2FD6)}
+.darrow{display:flex;justify-content:center;height:22px}
+.darrow i{position:relative;width:2px;height:100%;background:var(--label3)}
+.darrow i:after{content:"";position:absolute;left:-4px;bottom:-1px;width:10px;height:10px;border-right:2px solid var(--label3);border-bottom:2px solid var(--label3);transform:rotate(45deg)}
+.dfan{display:block;width:100%;height:34px}
+.dfan path{fill:none;stroke:var(--label3);stroke-width:2;vector-effect:non-scaling-stroke}
+.dgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.dmini{display:flex;flex-direction:column;align-items:center;text-align:center;gap:6px;padding:12px 6px;border-radius:16px;background:var(--bg)}
+.dmini b{font:650 14px/1.2 InterMM}
+.dmini span:not(.dic){font-size:12px;line-height:1.3;color:var(--label2)}
+.dcols{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.dcol{padding:12px;border-radius:16px}
+.dcol.yes{background:color-mix(in srgb,#34C759 12%,transparent)}
+.dcol.no{background:color-mix(in srgb,#FF3B30 10%,transparent)}
+.dch{display:flex;align-items:center;gap:6px;font:700 14px/1.2 InterMM;margin-bottom:8px}
+.dcol.yes .dch{color:#1E9E45}.dcol.no .dch{color:#D70015}
+.dch .ti{width:18px;height:18px}
+.dcol p{font-size:13px;line-height:1.35;padding:6px 0;border-top:.5px solid var(--sep)}
+.dstats{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px}
+.dstat{padding:14px 12px;border-radius:16px;background:var(--bg)}
+.dstat b{display:block;font:800 30px/1 InterMM;color:var(--blue)}
+.dstat span{display:block;margin-top:6px;font-size:13px;line-height:1.3;color:var(--label2)}
+code.ic{font:500 .92em/1 ui-monospace,SFMono-Regular,Menlo,monospace;padding:2px 6px;border-radius:6px;background:var(--fill)}

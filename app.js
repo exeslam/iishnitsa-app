@@ -40,7 +40,7 @@
 
   const esc = (s) => String(s ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
   const icon = (name) => `<span class="ti">${window.ICONS?.[name] ? `<svg viewBox="0 0 24 24">${window.ICONS[name]}</svg>` : ""}</span>`;
-  const inline = (s) => esc(s).replace(/\*\*(.+?)\*\*/g, "<b>$1</b>");
+  const inline = (s) => esc(s).replace(/\*\*(.+?)\*\*/g, "<b>$1</b>").replace(/`([^`]+)`/g, "<code class=\"ic\">$1</code>");
   const haptic = (kind) => tg?.HapticFeedback?.[kind === "ok" ? "notificationOccurred" : "impactOccurred"]?.(kind === "ok" ? "success" : "light");
 
   function paintIcons(root = document) {
@@ -207,13 +207,19 @@
       <span class="sym" style="--c1:${look.c[0]};--c2:${look.c[1]}">${icon(look.icon)}</span>
       <span class="txt"><span class="t">${fresh ? NEW : ""}${esc(t)}</span><span class="s">${esc(sub)}</span></span>${extra || chev()}</button>`;
   const PROMPT_LOOK = { icon: "writing", c: ["#5E5CE6", "#4B48D6"] };
+  // Гайд с motion-баннером показывается крупным блоком: видео сверху, название и теги снизу (29.09).
+  const gblock = (x) => `<button class="gblock" data-go="#/guide/${esc(x.slug)}" style="--c1:${x.c1};--c2:${x.c2}">
+      <span class="gb-media"><video src="${esc(x.video)}" poster="${esc(x.poster || "")}" autoplay muted loop playsinline preload="metadata"></video></span>
+      <span class="gb-txt"><span class="t">${isNew(x.date) ? NEW : ""}${esc(x.title)}</span><span class="s">${esc(x.subtitle)}</span>
+      <span class="gb-tags">${(x.tags || []).map((t) => `<span class="badge">${esc(t)}</span>`).join("")}</span></span></button>`;
+  const guideCard = (x) => (x.video ? gblock(x) : card(`#/guide/${x.slug}`, { icon: x.icon, c: [x.c1, x.c2] }, x.title, x.subtitle, "", isNew(x.date)));
 
   async function feed(cat) {
     const [g, p, lib, repos] = await Promise.all([guides(), prompts(), load(COLLECTIONS.library.file), load(COLLECTIONS.repos.file)]);
     const libSec = (id) => lib.sections.find((s) => s.id === id);
     const secRow = (key, s) => s && card(`${COLLECTIONS[key].base}/${s.id}`, SECTION_LOOK[s.id] || { icon: "star", c: ["#8E8E93", "#6D6D72"] }, s.title, `${s.items.length} проверенных ссылок`);
     const blocks = {
-      guides: () => g.map((x) => card(`#/guide/${x.slug}`, { icon: x.icon, c: [x.c1, x.c2] }, x.title, x.subtitle, "", isNew(x.date))),
+      guides: () => g.map(guideCard),
       prompts: (n) => p.prompts.slice(0, n).map((x) => card(`#/prompt/${x.id}`, PROMPT_LOOK, x.title, x.text.split("\n")[0], "", isNew(x.added))),
       interesting: () => [
         card("#/glossary", { icon: "writing", c: ["#5E5CE6", "#4B48D6"] }, "Словарь вайбкодера", "Агент, скилл, MCP и токен простыми словами"),
@@ -231,7 +237,7 @@
       return groups.map(([t, xs]) => `<div class="fhead"><h2>${esc(t[0].toUpperCase() + t.slice(1))}</h2><span class="count">${xs.length}</span></div><div class="flist">${xs.map((x) => card(`#/prompt/${x.id}`, PROMPT_LOOK, x.title, x.text.split("\n")[0], "", isNew(x.added))).join("")}</div>`).join("");
     }
     if (cat !== "all") return `<div class="flist">${blocks[cat](99).join("")}</div>`;
-    const gCard = (x) => card(`#/guide/${x.slug}`, { icon: x.icon, c: [x.c1, x.c2] }, x.title, x.subtitle, "", isNew(x.date));
+    const gCard = guideCard;
     const pCard = (x) => card(`#/prompt/${x.id}`, PROMPT_LOOK, x.title, x.text.split("\n")[0], "", isNew(x.added));
     const tags = interestTags();
     const mine = [...g.filter((x) => (x.topics || []).some((t) => state.interests.includes(t))).map(gCard), ...p.prompts.filter((x) => (x.tags || []).some((t) => tags.includes(t))).map(pCard)].slice(0, 4);
@@ -244,7 +250,8 @@
     if (state.interests.includes("claude")) ORDER.splice(ORDER.indexOf("interesting"), 1), ORDER.splice(1, 0, "interesting");
     return top + ORDER.map((id) => CATS.find((c) => c.id === id))
       .map((c) => {
-        const rows = blocks[c.id](3);
+        // гайды, уже показанные крупными блоками в «Для тебя» и «Новое», второй раз не повторяем
+        const rows = c.id === "guides" ? g.filter((x) => !top.includes(`#/guide/${x.slug}"`)).slice(0, 3).map(guideCard) : blocks[c.id](3);
         return rows.length ? `<div class="fhead"><h2>${c.title}</h2><button class="more" data-cat="${c.id}">Все</button></div><div class="flist">${rows.join("")}</div>` : "";
       })
       .join("");
@@ -432,10 +439,11 @@
     let buf = [];
     let inCode = false;
     const flush = () => buf.length && (blocks.push({ lines: buf }), (buf = []));
+    let lang = "";
     for (const line of body) {
       if (line.trim().startsWith("```")) {
-        if (inCode) blocks.push({ code: buf.join("\n")}), (buf = []);
-        else flush();
+        if (inCode) blocks.push(lang === "diagram" ? { diagram: buf.join("\n") } : { code: buf.join("\n") }), (buf = []);
+        else flush(), (lang = line.trim().slice(3).trim());
         inCode = !inCode;
         continue;
       }
@@ -460,12 +468,42 @@
     return { intro, sections };
   }
 
+  // ---------- схемы в гайдах (```diagram + JSON), 29.09 ----------
+  // flow: {type:"flow", title?, steps:[{icon,t,s?}]}          цепочка шагов сверху вниз
+  // hub:  {type:"hub", title?, center:{icon,t,s?}, items:[{icon,t,s?}], result?:{icon,t,s?}}  центр раздаёт, помощники делают, итог
+  // compare: {type:"compare", title?, yes:{t,items:[]}, no:{t,items:[]}}
+  // stats: {type:"stats", title?, items:[{v,t}]}
+  function diagramHtml(src) {
+    let d;
+    try { d = JSON.parse(src); } catch { return ""; }
+    const node = (n, cls = "") => `<div class="dnode ${cls}"><span class="dic">${icon(n.icon || "circle-check-filled")}</span><div><b>${esc(n.t)}</b>${n.s ? `<span>${esc(n.s)}</span>` : ""}</div></div>`;
+    const title = d.title ? `<div class="dtitle">${esc(d.title)}</div>` : "";
+    if (d.type === "flow")
+      return `<figure class="diagram flow">${title}${d.steps.map((st, k) => (k ? `<div class="darrow"><i></i></div>` : "") + node(st, k === d.steps.length - 1 ? "last" : "")).join("")}</figure>`;
+    if (d.type === "hub")
+      return `<figure class="diagram hub">${title}${node(d.center, "center")}
+        <svg class="dfan" viewBox="0 0 300 60" preserveAspectRatio="none"><path d="M150 0 C150 30 50 30 50 60 M150 0 V60 M150 0 C150 30 250 30 250 60"/></svg>
+        <div class="dgrid">${d.items.map((n) => `<div class="dmini"><span class="dic">${icon(n.icon || "robot")}</span><b>${esc(n.t)}</b>${n.s ? `<span>${esc(n.s)}</span>` : ""}</div>`).join("")}</div>
+        ${d.result ? `<svg class="dfan" viewBox="0 0 300 60" preserveAspectRatio="none"><path d="M50 0 C50 30 150 30 150 60 M150 0 V60 M250 0 C250 30 150 30 150 60"/></svg>${node(d.result, "last")}` : ""}</figure>`;
+    if (d.type === "compare")
+      return `<figure class="diagram compare">${title}<div class="dcols">
+        <div class="dcol yes"><div class="dch">${icon("check")}${esc(d.yes.t)}</div>${d.yes.items.map((x) => `<p>${esc(x)}</p>`).join("")}</div>
+        <div class="dcol no"><div class="dch">${icon("x")}${esc(d.no.t)}</div>${d.no.items.map((x) => `<p>${esc(x)}</p>`).join("")}</div></div></figure>`;
+    if (d.type === "stats")
+      return `<figure class="diagram stats">${title}<div class="dstats">${d.items.map((x) => `<div class="dstat"><b>${esc(x.v)}</b><span>${esc(x.t)}</span></div>`).join("")}</div></figure>`;
+    return "";
+  }
+
   function sectionBody(sec, codes) {
     const out = [];
     const neg = /не |без |🚫|🚩/iu.test(sec.emoji + " " + sec.title);
     const bs = sec.blocks;
     for (let i = 0; i < bs.length; i++) {
       const b = bs[i];
+      if (b.diagram !== undefined) {
+        out.push(diagramHtml(b.diagram));
+        continue;
+      }
       if (b.code !== undefined) {
         codes.push(b.code);
         out.push(`<div class="pcard"><pre>${hlVars(b.code)}</pre><button class="copy wide" data-copy="${codes.length - 1}">${icon("copy")}Скопировать</button></div>`);
@@ -517,7 +555,8 @@
     view.innerHTML = `<section class="screen guide">
       <div class="progress"><i></i></div>
       ${back("#/home", "Главная")}
-      <header class="gcover" style="--a:${g.c1};--b:${g.c2}">
+      <header class="gcover${g.video ? " vid" : ""}" style="--a:${g.c1};--b:${g.c2}">
+        ${g.video ? `<video class="gc-video" src="${esc(g.video)}" poster="${esc(g.poster || "")}" autoplay muted loop playsinline></video>` : ""}
         <div class="gact">${favBtn(`g:${g.slug}`)}<button class="fav" data-share="g|${esc(g.slug)}|${esc(g.title)}" aria-label="Поделиться">${icon("send")}</button></div>
         <span class="sym big">${icon(g.icon)}</span>
         <h1>${esc(intro.title || g.title)}</h1>

@@ -63,6 +63,14 @@
     else tg.openLink(url);
   }
 
+  // PDF гайда: в Telegram 8.0+ штатное окно загрузки, иначе файл открывается ссылкой.
+  function downloadPdf(path, name) {
+    haptic();
+    const url = new URL(path, location.href).href;
+    if (tg?.downloadFile && tg.isVersionAtLeast?.("8.0")) tg.downloadFile({ url, file_name: name });
+    else openLink(url);
+  }
+
   async function copy(text, btn) {
     btn.dataset.label ||= btn.textContent.trim();
     try {
@@ -564,6 +572,7 @@
         <div class="meta">${g.tags.map((t) => `<span class="badge">${esc(t)}</span>`).join("")}</div>
       </header>
       <div class="author"><img src="avatar.jpg" alt=""><div><b>Умар</b><span>канал ИИшница</span></div><span class="read">${icon("clock")}${mins} мин чтения</span></div>
+      ${g.pdf ? `<button class="cta pdf" data-pdf="${esc(g.pdf)}">${icon("download")}Скачать PDF</button>` : ""}
       ${intro.paras.slice(1).map((p) => `<p class="lead">${p.map(inline).join("<br>")}</p>`).join("")}
       <div class="toc"><div class="toc-h">Содержание</div>${sections.map((s, k) => `<button class="toc-row" data-jump="g${k}"><span class="gemoji sm">${esc(s.emoji || String(k + 1))}</span><span>${esc(s.title)}</span>${chev()}</button>`).join("")}</div>
       ${body}
@@ -571,6 +580,7 @@
       <button class="cta ghost" data-link="${CHANNEL}">${icon("brand-telegram")}Больше в канале ИИшница</button>
     </section>`;
     view.querySelectorAll("[data-copy]").forEach((b) => b.addEventListener("click", () => copy(codes[Number(b.dataset.copy)], b)));
+    view.querySelectorAll("[data-pdf]").forEach((b) => b.addEventListener("click", () => downloadPdf(b.dataset.pdf, `iishnitsa-${g.slug}.pdf`)));
     view.querySelectorAll("[data-jump]").forEach((b) => b.addEventListener("click", () => { haptic(); document.getElementById(b.dataset.jump)?.scrollIntoView({ behavior: "smooth", block: "start" }); }));
     const bar = view.querySelector(".progress i");
     const onScroll = () => {

@@ -1,5 +1,26 @@
 [
  {
+  "slug": "ai-montage",
+  "title": "ИИ-монтаж по слоям",
+  "subtitle": "6 шагов из ролика: что нейросеть делает с видео и чем повторить каждый бесплатно",
+  "tags": [
+   "6 слоёв",
+   "3 промпта",
+   "PDF"
+  ],
+  "icon": "stack-2",
+  "c1": "#FFB020",
+  "c2": "#E8740C",
+  "file": "guides/ai-montage.md",
+  "pdf": "media/guides/ai-montage.pdf",
+  "date": "2026-10-03",
+  "topics": [
+   "content"
+  ],
+  "video": "media/guides/ai-montage.mp4",
+  "poster": "media/guides/ai-montage.jpg"
+ },
+ {
   "slug": "multiagent",
   "title": "Команда нейросетей",
   "subtitle": "Мультиагентная система в Claude Code: когда нужна, сколько стоит и как собрать за 10 минут",

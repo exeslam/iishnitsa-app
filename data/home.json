@@ -1,6 +1,18 @@
 {
   "slides": [
     {
+      "slug": "reels",
+      "art": "reels",
+      "badge": "7 990 ₸",
+      "title": "Научу делать такие рилсы",
+      "subtitle": "3D, моушен, озвучка и звук, как в моём ролике",
+      "cta": "Хочу так же",
+      "c1": "#FFB020",
+      "c2": "#E8740C",
+      "video": "media/reels-slide.mp4",
+      "poster": "media/reels-slide.jpg"
+    },
+    {
       "slug": "claude",
       "art": "terminal",
       "badge": "3 990 ₸",

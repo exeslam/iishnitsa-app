@@ -1,11 +1,11 @@
 [
  {
   "slug": "ai-montage",
-  "title": "ИИ-монтаж по слоям",
-  "subtitle": "6 шагов из ролика: что нейросеть делает с видео и чем повторить каждый бесплатно",
+  "title": "ИИ-монтаж за 15 минут",
+  "subtitle": "4 слоя из ролика бесплатно и с телефона: 5 шагов и один промпт",
   "tags": [
-   "6 слоёв",
-   "3 промпта",
+   "15 минут",
+   "1 промпт",
    "PDF"
   ],
   "icon": "stack-2",
@@ -18,7 +18,14 @@
    "content"
   ],
   "video": "media/guides/ai-montage.mp4",
-  "poster": "media/guides/ai-montage.jpg"
+  "poster": "media/guides/ai-montage.jpg",
+  "upsell": {
+   "slug": "reels",
+   "badge": "7 990 ₸",
+   "title": "Научу делать такие рилсы",
+   "text": "3D, моушен, озвучка и звук, как в ролике. Видеоуроки и шаблоны",
+   "cta": "Хочу так же"
+  }
  },
  {
   "slug": "multiagent",

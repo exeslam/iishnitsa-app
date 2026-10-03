@@ -319,6 +319,8 @@
       <div class="ln ok">${icon("circle-check-filled")} index.html</div>
       <div class="ln ok">${icon("circle-check-filled")} style.css</div>
       <div class="ln ok">${icon("circle-check-filled")} Готово, открой в браузере</div></div>`,
+    // стопка слоёв ИИ-монтажа, как в рилсе laz-aiedit
+    reels: () => `<div class="art-reels">${[["user", "Лицо"], ["video", "Видео"], ["typography", "Текст"], ["music", "Звук"]].map(([ic, t], i) => `<div class="lay" style="--i:${i}"><span class="ic">${icon(ic)}</span><b>${t}</b></div>`).join("")}</div>`,
     club: () => `<div class="art-club">${["🍳", "⚡️", "🎬", "🧩"].map((e, i) => `<span style="--i:${i}">${e}</span>`).join("")}<div class="bubble">Разбор твоего проекта в пятницу</div></div>`,
   };
 
@@ -338,7 +340,7 @@
       case "faq":
         return `<h2 class="p-h">${esc(b.title || "Вопросы")}</h2><div class="group">${b.items.map((q) => `<details class="term"><summary><span class="t">${esc(q.q)}</span><span class="en"></span>${icon("chevron-down").replace('class="ti"', 'class="ti chev"')}</summary><div class="body"><p>${inline(q.a)}</p></div></details>`).join("")}</div>`;
       case "video":
-        return `<div class="promo p-video"><video src="${esc(b.src)}" ${b.poster ? `poster="${esc(b.poster)}"` : ""} autoplay muted loop playsinline preload="metadata"></video></div>`;
+        return `<div class="promo p-video"${b.ratio ? ` style="aspect-ratio:${esc(b.ratio)}"` : ""}><video src="${esc(b.src)}" ${b.poster ? `poster="${esc(b.poster)}"` : ""} autoplay muted loop playsinline preload="metadata"></video></div>`;
       case "text":
         return `${b.title ? `<h2 class="p-h">${esc(b.title)}</h2>` : ""}<p class="p-sub">${inline(b.text)}</p>`;
       default:
@@ -557,6 +559,8 @@
     const codes = [];
     const words = md.split(/\s+/).length;
     const mins = Math.max(1, Math.round(words / 180));
+    // Следующий шаг после гайда: свой у гайда (guides.json `upsell`), иначе система Claude Code.
+    const up = g.upsell || { slug: "claude", title: "Базовая система Claude Code", text: "Настроим нейронку, которая делает такие штуки за тебя" };
     const body = sections.map((sec, k) => `<section class="gsec" id="g${k}">
         <div class="gsec-h"><span class="gemoji">${esc(sec.emoji || String(k + 1))}</span><h2>${esc(sec.title)}</h2></div>
         ${sectionBody(sec, codes)}</section>`).join("");
@@ -576,7 +580,7 @@
       ${intro.paras.slice(1).map((p) => `<p class="lead">${p.map(inline).join("<br>")}</p>`).join("")}
       <div class="toc"><div class="toc-h">Содержание</div>${sections.map((s, k) => `<button class="toc-row" data-jump="g${k}"><span class="gemoji sm">${esc(s.emoji || String(k + 1))}</span><span>${esc(s.title)}</span>${chev()}</button>`).join("")}</div>
       ${body}
-      <div class="upsell" data-go="#/p/claude"><span class="badge">Следующий шаг</span><b>Базовая система Claude Code</b><p>Настроим нейронку, которая делает такие штуки за тебя</p><span class="slide-cta">Подробнее${icon("chevron-right")}</span></div>
+      <div class="upsell" data-go="#/p/${esc(up.slug)}"><span class="badge">${esc(up.badge || "Следующий шаг")}</span><b>${esc(up.title)}</b><p>${esc(up.text)}</p><span class="slide-cta">${esc(up.cta || "Подробнее")}${icon("chevron-right")}</span></div>
       <button class="cta ghost" data-link="${CHANNEL}">${icon("brand-telegram")}Больше в канале ИИшница</button>
     </section>`;
     view.querySelectorAll("[data-copy]").forEach((b) => b.addEventListener("click", () => copy(codes[Number(b.dataset.copy)], b)));

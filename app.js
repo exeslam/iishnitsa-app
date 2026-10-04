@@ -348,13 +348,37 @@
     }
   }
 
+  // Покупка: сначала понятные шаги, потом чат с ботом. Приложение сворачивается, чтобы человек увидел
+  // сообщение бота с номером Kaspi, а не остался в приложении (Умар 04.10: «он может не понять, что бот написал»).
+  function buySheet(cta) {
+    haptic();
+    const back = document.createElement("div");
+    back.className = "sheet-back";
+    back.innerHTML = `<div class="sheet" role="dialog" aria-label="Как купить">
+      <div class="grab"></div><h3>Как купить</h3>
+      <div class="steps">${cta.steps.map((t, i) => `<div class="st"><span class="pn">${i + 1}</span><p>${inline(t)}</p></div>`).join("")}</div>
+      <button class="cta" data-go-bot>${icon("brand-telegram")}${esc(cta.go || "Перейти в бота")}</button>
+      <button class="sheet-x">Отмена</button></div>`;
+    document.body.appendChild(back);
+    requestAnimationFrame(() => back.classList.add("on"));
+    const close = () => { back.classList.remove("on"); setTimeout(() => back.remove(), 250); };
+    back.addEventListener("click", (e) => { if (e.target === back) close(); });
+    back.querySelector(".sheet-x").addEventListener("click", close);
+    back.querySelector("[data-go-bot]").addEventListener("click", () => {
+      openLink(cta.url);
+      if (tg) setTimeout(() => tg.close(), 400);
+      else close();
+    });
+  }
+
   async function screenProduct(slug) {
     const p = await load(`data/products/${slug}.json`);
     view.innerHTML = `<section class="screen product">
       ${back("#/home", "Главная")}
       ${p.blocks.map(block).join("")}
-      <div class="p-bottom"><button class="cta" data-link="${esc(p.cta.url)}">${esc(p.cta.label)}</button>${p.cta.note ? `<p class="foot center">${esc(p.cta.note)}</p>` : ""}</div>
+      <div class="p-bottom"><button class="cta" ${p.cta.steps ? "data-buy" : `data-link="${esc(p.cta.url)}"`}>${esc(p.cta.label)}</button>${p.cta.note ? `<p class="foot center">${esc(p.cta.note)}</p>` : ""}</div>
     </section>`;
+    view.querySelector("[data-buy]")?.addEventListener("click", () => buySheet(p.cta));
   }
 
   async function screenPrompt(id) {

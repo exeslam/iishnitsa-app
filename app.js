@@ -4,6 +4,13 @@
 (() => {
   // telegram-web-app.js defines WebApp in any browser; only initData proves we run inside Telegram.
   const tg = window.Telegram?.WebApp?.initData ? window.Telegram.WebApp : undefined;
+  // Telegram дописывает свои параметры в адрес после #: "#/course/k/<ключ>?tgWebAppData=…" или "#tgWebAppData=…".
+  // telegram-web-app.js их уже разобрал, а роутеру они мешали: ключ курса и переходы на гайды из бота ломались (04.10).
+  {
+    const h = location.hash;
+    const clean = /^#tgWebApp/.test(h) ? "" : h.split("?")[0];
+    if (clean !== h) history.replaceState(null, "", location.pathname + location.search + clean);
+  }
   const CHANNEL = "https://t.me/+HnT-k_--NaU1ZWMy";
   const view = document.getElementById("view");
   const tabbar = document.getElementById("tabbar");
@@ -281,11 +288,12 @@
   }
 
   async function screenHome() {
-    const h = await home();
+    const [h, hasCourse] = await Promise.all([home(), courseKey()]);
     view.innerHTML = `<section class="screen home">
       <header class="topbar"><img src="avatar.jpg" alt=""><div><b>ИИшница</b><span>нейронки на завтрак</span></div>
         <button class="round" data-go="#/saved" aria-label="Сохранённое">${icon("heart")}</button></header>
       <button class="search fake" data-go="#/search">${icon("search")}<span>Поиск по гайдам и промптам</span></button>
+      ${hasCourse ? `<button class="mycourse" data-go="#/course">${symFor({ icon: "school", c: ["#FFB020", "#E8740C"] })}<span class="txt"><b>Твой курс</b><span>Научу делать такие рилсы</span></span><span class="go">Учиться${icon("chevron-right")}</span></button>` : ""}
       <div class="slider" id="slider">${h.slides.map(slideHtml).join("")}</div>
       <div class="dots">${h.slides.map((_, i) => `<i class="${i ? "" : "on"}"></i>`).join("")}</div>
       ${h.video ? `<div class="promo"><video src="${esc(h.video.src)}" ${h.video.poster ? `poster="${esc(h.video.poster)}"` : ""} autoplay muted loop playsinline preload="metadata"></video></div>` : ""}
@@ -984,6 +992,13 @@
       else if (a === "glossary") await screenGlossary();
       else if (a === "account") await screenAccount();
       else if (a === "purchases") await screenPurchases();
+      else if (a === "k" && /^[0-9a-f]{64}$/.test(b || "")) {
+        // Ключ курса из личной кнопки меню покупателя: запомнить и на главную.
+        await store.set("course_key", b);
+        courseCache = null;
+        history.replaceState(null, "", location.pathname + location.search + "#/home");
+        return route();
+      }
       else if (a === "course") await screenCourse(b && d(b), c && d(c));
       else if (a === "doc" && b) await screenDoc(d(b));
       else if (a === "search") await screenSearch();

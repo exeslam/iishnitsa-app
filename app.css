@@ -458,4 +458,7 @@ code.ic{font:500 .92em/1 ui-monospace,SFMono-Regular,Menlo,monospace;padding:2px
 .cvideo video{width:100%;height:100%;object-fit:contain;background:#000}
 .cplay{display:flex;align-items:center;gap:10px;height:52px;padding:0 22px;border-radius:26px;background:rgba(255,255,255,.14);color:#fff;font:650 17px/1 InterMM}
 .cload{color:rgba(255,255,255,.75);font-size:15px;padding:20px;text-align:center}
+.mycourse{display:flex;align-items:center;gap:12px;width:100%;padding:12px 14px;margin:0 0 16px;border-radius:18px;background:var(--card);box-shadow:var(--shadow);text-align:left}
+.mycourse .txt{flex:1;min-width:0}.mycourse b{display:block;font:700 16px/1.2 InterMM}.mycourse .txt span{display:block;font-size:14px;color:var(--label2)}
+.mycourse .go{display:flex;align-items:center;gap:2px;color:var(--blue);font:650 15px/1 InterMM}.mycourse .go .ti{width:18px;height:18px}
 

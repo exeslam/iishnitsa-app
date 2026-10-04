@@ -4,7 +4,7 @@
 (() => {
   // telegram-web-app.js defines WebApp in any browser; only initData proves we run inside Telegram.
   const tg = window.Telegram?.WebApp?.initData ? window.Telegram.WebApp : undefined;
-  const CHANNEL = "https://t.me/iishnitsa_nazavtrak";
+  const CHANNEL = "https://t.me/+HnT-k_--NaU1ZWMy";
   const view = document.getElementById("view");
   const tabbar = document.getElementById("tabbar");
   const toastEl = document.getElementById("toast");
@@ -416,7 +416,7 @@
       </div>
       <div class="caption">Связь</div>
       <div class="group">
-        ${row("https://t.me/iishnitsa_nazavtrak", { icon: "brand-telegram", c: ["#2AABEE", "#1E96D6"] }, "Канал ИИшница")}
+        ${row(CHANNEL, { icon: "brand-telegram", c: ["#2AABEE", "#1E96D6"] }, "Канал ИИшница")}
         ${row("https://t.me/iishnitsa1_bot", { icon: "message-circle", c: ["#007AFF", "#0A6CFF"] }, "Поддержка", "Напиши боту, ответим")}
       </div>
       <p class="foot center">ИИшница · версия 0.3</p>

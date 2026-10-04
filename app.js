@@ -376,7 +376,8 @@
     view.innerHTML = `<section class="screen product">
       ${back("#/home", "Главная")}
       ${p.blocks.map(block).join("")}
-      <div class="p-bottom"><button class="cta" ${p.cta.steps ? "data-buy" : `data-link="${esc(p.cta.url)}"`}>${esc(p.cta.label)}</button>${p.cta.note ? `<p class="foot center">${esc(p.cta.note)}</p>` : ""}</div>
+      ${slug === "reels" && (await courseKey()) ? `<div class="p-bottom"><button class="cta" data-go="#/course">${icon("school")}Открыть курс</button></div>`
+        : `<div class="p-bottom"><button class="cta" ${p.cta.steps ? "data-buy" : `data-link="${esc(p.cta.url)}"`}>${esc(p.cta.label)}</button>${p.cta.note ? `<p class="foot center">${esc(p.cta.note)}</p>` : ""}</div>`}
     </section>`;
     view.querySelector("[data-buy]")?.addEventListener("click", () => buySheet(p.cta));
   }
@@ -448,8 +449,10 @@
   }
 
   async function screenPurchases() {
+    const has = await courseKey();
     view.innerHTML = `<section class="screen">${back("#/account", "Аккаунт")}<header class="hero"><h1>Мои покупки</h1></header>
-      <div class="empty-card">${icon("wallet")}<b>Покупок пока нет</b><p>Когда купишь курс или вступишь в клуб, доступ появится здесь</p><button class="cta" data-go="#/home">На главную</button></div></section>`;
+      ${has ? `<div class="group"><button class="row" data-go="#/course">${symFor({ icon: "school", c: ["#FFB020", "#E8740C"] })}<span class="txt"><div class="t">Научу делать такие рилсы</div><div class="s">Курс и набор Рилс-машина</div></span>${chev()}</button></div>`
+        : `<div class="empty-card">${icon("wallet")}<b>Покупок пока нет</b><p>Когда купишь курс или вступишь в клуб, доступ появится здесь</p><button class="cta" data-go="#/home">На главную</button></div>`}</section>`;
   }
 
   const DOC_TITLES = { privacy: "Политика конфиденциальности", terms: "Пользовательское соглашение", offer: "Публичная оферта" };
@@ -845,6 +848,113 @@
     </section>`;
   }
 
+  // ---------- курс в приложении (04.10.2026): уроки зашифрованы course-build.mjs, ключ даёт бот кнопкой #/course/k/<hex> ----------
+  let courseCache = null;
+  const b64 = (str) => Uint8Array.from(atob(str), (ch) => ch.charCodeAt(0));
+  async function courseKey() {
+    const k = await store.get("course_key");
+    return k && /^[0-9a-f]{64}$/.test(k) ? k : null;
+  }
+  const aesKey = (hex) => crypto.subtle.importKey("raw", Uint8Array.from(hex.match(/../g), (h) => parseInt(h, 16)), "AES-GCM", false, ["decrypt"]);
+  const unseal = (key, bytes) => crypto.subtle.decrypt({ name: "AES-GCM", iv: bytes.slice(0, 12) }, key, bytes.slice(12));
+  async function loadCourse() {
+    if (courseCache) return courseCache;
+    const hex = await courseKey();
+    if (!hex) return null;
+    const enc = await load("data/course.enc.json");
+    try {
+      const key = await aesKey(hex);
+      const plain = await unseal(key, b64(enc.data));
+      courseCache = { ...JSON.parse(new TextDecoder().decode(plain)), total: enc.total, key };
+      return courseCache;
+    } catch {
+      // Ключ сменили: старый больше не подходит, новый человек получит кнопкой в боте.
+      await store.set("course_key", "");
+      return null;
+    }
+  }
+  async function courseDone() {
+    try { return new Set(JSON.parse((await store.get("course_done")) || "[]")); } catch { return new Set(); }
+  }
+  const botLink = (start) => `https://t.me/${BOT}?start=${start}`;
+
+  async function screenCourse(slug, arg) {
+    if (slug === "k" && /^[0-9a-f]{64}$/.test(arg || "")) {
+      await store.set("course_key", arg);
+      courseCache = null;
+      history.replaceState(null, "", "#/course");
+      return screenCourse();
+    }
+    const c = await loadCourse();
+    if (!c) {
+      view.innerHTML = `<section class="screen">${back("#/home", "Главная")}<header class="hero"><h1>Курс</h1></header>
+        <div class="empty-card">${icon("key")}<b>Курс открывается после покупки</b><p>Уже купил? Открой приложение кнопкой "Учиться в приложении" в чате с ботом</p>
+        <button class="cta" data-go="#/p/reels">О курсе</button><button class="cta ghost" data-link="${botLink("course")}">${icon("brand-telegram")}Открыть бота</button></div></section>`;
+      return;
+    }
+    const done = await courseDone();
+    if (!slug) {
+      const n = c.lessons.filter((l) => done.has(l.slug)).length;
+      const next = c.lessons.find((l) => !done.has(l.slug));
+      view.innerHTML = `<section class="screen course">
+        ${back("#/account", "Аккаунт")}
+        <header class="hero"><div class="eyebrow">${icon("school")}Твой курс</div><h1>${esc(c.title)}</h1><p>Пройдено ${n} из ${c.total}</p></header>
+        <div class="cprog"><i style="width:${Math.round((100 * n) / c.total)}%"></i></div>
+        ${next ? `<button class="cta" data-go="#/course/${esc(next.slug)}">${n ? "Продолжить" : "Начать"}: ${esc(next.title)}</button>` : `<p class="foot">Курс пройден 🔥 Пиши в бота, покажи свой первый рилс</p>`}
+        <div class="toc"><div class="toc-h">Уроки</div>${c.lessons.map((l, i) => `<button class="toc-row" data-go="#/course/${esc(l.slug)}"><span class="gemoji sm${done.has(l.slug) ? " ok" : ""}">${done.has(l.slug) ? "✓" : i}</span><span>${esc(l.title)}</span>${chev()}</button>`).join("")}
+          ${c.total > c.lessons.length ? `<div class="toc-row soon"><span class="gemoji sm">⏳</span><span>Ещё ${c.total - c.lessons.length} скоро, придут сюда сами</span></div>` : ""}</div>
+        <button class="cta ghost" data-kit>${icon("download")}Скачать Рилс-машину</button>
+        <button class="cta ghost" data-link="https://t.me/${BOT}">${icon("message-circle")}Вопрос по курсу</button>
+      </section>`;
+      view.querySelector("[data-kit]").addEventListener("click", () => {
+        toast("Бот пришлёт архив в чат");
+        openLink(botLink("kit"));
+        if (tg) setTimeout(() => tg.close(), 600);
+      });
+      return;
+    }
+    const i = c.lessons.findIndex((l) => l.slug === slug);
+    if (i < 0) return go("#/course");
+    const l = c.lessons[i];
+    const nextL = c.lessons[i + 1];
+    const { intro, sections } = parseGuide(l.md);
+    const codes = [];
+    view.innerHTML = `<section class="screen guide course">
+      <div class="progress"><i></i></div>
+      ${back("#/course", "Уроки")}
+      <header class="hero"><div class="eyebrow">Урок ${i} из ${c.total - 1}</div><h1>${esc(intro.title || l.title)}</h1></header>
+      ${l.video ? `<div class="promo cvideo"><button class="cplay" data-video>${icon("player-play")}Смотреть видео</button></div>` : ""}
+      ${intro.paras.map((p) => `<p class="lead">${p.map(inline).join("<br>")}</p>`).join("")}
+      ${sections.map((sec, k) => `<section class="gsec" id="g${k}"><div class="gsec-h"><span class="gemoji">${esc(sec.emoji || String(k + 1))}</span><h2>${esc(sec.title)}</h2></div>${sectionBody(sec, codes)}</section>`).join("")}
+      <button class="cta" data-done>${icon("check")}${nextL ? "Пройден, дальше" : "Пройден, к урокам"}</button>
+    </section>`;
+    view.querySelectorAll("[data-copy]").forEach((b) => b.addEventListener("click", () => copy(codes[Number(b.dataset.copy)], b)));
+    view.querySelector("[data-done]").addEventListener("click", async () => {
+      haptic("ok");
+      done.add(l.slug);
+      await store.set("course_done", JSON.stringify([...done]));
+      go(nextL ? `#/course/${nextL.slug}` : "#/course");
+    });
+    view.querySelector("[data-video]")?.addEventListener("click", async (e) => {
+      const box = e.currentTarget.parentElement;
+      box.innerHTML = `<div class="cload">Загружаю видео</div>`;
+      try {
+        const bytes = new Uint8Array(await (await fetch(l.video)).arrayBuffer());
+        const url = URL.createObjectURL(new Blob([await unseal(c.key, bytes)], { type: "video/mp4" }));
+        box.innerHTML = `<video src="${url}" controls autoplay playsinline></video>`;
+      } catch {
+        box.innerHTML = `<div class="cload">Не получилось загрузить видео. Проверь интернет</div>`;
+      }
+    });
+    const bar = view.querySelector(".progress i");
+    const onScroll = () => {
+      if (!document.body.contains(bar)) return window.removeEventListener("scroll", onScroll);
+      const max = document.documentElement.scrollHeight - innerHeight;
+      bar.style.transform = `scaleX(${max > 0 ? Math.min(1, scrollY / max) : 0})`;
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+  }
+
   // ---------- router ----------
   function go(hash) {
     if (location.hash === hash) route();
@@ -853,12 +963,12 @@
 
   async function route() {
     const [, a = "home", b, c] = (location.hash || "#/home").split("/");
-    const tab = ["account", "doc", "purchases", "saved"].includes(a) ? "account" : "home";
+    const tab = ["account", "doc", "purchases", "saved", "course"].includes(a) ? "account" : "home";
     const deep = !["home", "account", ""].includes(a);
     tabbar.dataset.at = tab;
     tabbar.querySelectorAll(".tab").forEach((t) => t.setAttribute("aria-selected", String(t.dataset.tab === tab)));
     tabbar.classList.toggle("hide", deep);
-    document.body.classList.toggle("white", ["home", "", "p", "guide", "prompt", "search"].includes(a));
+    document.body.classList.toggle("white", ["home", "", "p", "guide", "prompt", "search", "course"].includes(a));
     applyTheme();
     if (tg) deep ? tg.BackButton.show() : tg.BackButton.hide();
     window.scrollTo(0, 0);
@@ -874,6 +984,7 @@
       else if (a === "glossary") await screenGlossary();
       else if (a === "account") await screenAccount();
       else if (a === "purchases") await screenPurchases();
+      else if (a === "course") await screenCourse(b && d(b), c && d(c));
       else if (a === "doc" && b) await screenDoc(d(b));
       else if (a === "search") await screenSearch();
       else if (a === "saved") await screenSaved();

@@ -449,4 +449,13 @@ code.ic{font:500 .92em/1 ui-monospace,SFMono-Regular,Menlo,monospace;padding:2px
 .sheet .st p{font-size:16px;line-height:1.35}
 .sheet .cta{margin-top:16px}
 .sheet-x{display:block;width:100%;height:44px;color:var(--label2);font-size:16px}
+/* курс */
+.cprog{height:8px;border-radius:4px;background:var(--fill);overflow:hidden;margin:0 4px 16px}
+.cprog i{display:block;height:100%;background:var(--green);border-radius:4px}
+.course .gemoji.ok{background:var(--green);color:#fff}
+.course .toc-row.soon{color:var(--label2)}
+.cvideo{aspect-ratio:9/16;max-height:70vh;margin:6px auto 18px;display:grid;place-items:center;background:#0b0e15}
+.cvideo video{width:100%;height:100%;object-fit:contain;background:#000}
+.cplay{display:flex;align-items:center;gap:10px;height:52px;padding:0 22px;border-radius:26px;background:rgba(255,255,255,.14);color:#fff;font:650 17px/1 InterMM}
+.cload{color:rgba(255,255,255,.75);font-size:15px;padding:20px;text-align:center}
 
